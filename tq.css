@@ -1,0 +1,77 @@
+.time-frame {
+    float: right;
+}
+
+body {
+    background-color: #f2f2f2;
+    font-family: monospace;
+    --border: 1px solid gray;
+    --font-family: monospace;
+    --font-size: 14px;
+    --bg: white;
+}
+
+.toggle {
+    background-color: lightgreen !important;
+}
+
+#toolbar {
+    margin-bottom: 1em;
+}
+
+#toolbar button {
+    background: linear-gradient(white, #ececec);
+    padding: 0.6em;
+    padding-left: 1em;
+    padding-right: 1em;
+    border: 1px solid #b9b9b9;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    color: #5c5c5c;
+    border-radius: 0.35em;
+}
+
+#toolbar button:hover {
+    background: linear-gradient(#ffffff, #d4d4d4);
+}
+
+.vis-timeline {
+    border: var(--border);
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    background: var(--bg);
+}
+
+
+/* .vis-item-content,
+.vis-item {
+    border: 1px solid #9a9a9a;
+    background-color: #b0de7b;
+}
+
+.vis-item,
+.vis-item.vis-line {
+    border-width: 1px;
+} */
+
+.vis-item.vis-selected {
+    border-color: orangered;
+    background-color: orangered;
+}
+
+.vis-time-axis .vis-text {
+    color: orangered;
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+    border-width: 1px;
+    border-color: rgb(70, 70, 70);
+}
+
+.vis-time-axis .vis-grid.vis-major {
+    border-width: 1px;
+    border-color: rgb(70, 70, 70);
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Time queues</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script src="tq.js"></script>
+    <script src="moment.js"></script>
+    <link href="tq.css" rel="stylesheet" type="text/css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
+
+    <style>
+        .vis-item {
+            border: 1px solid #b4b4b4;
+            background-color: #8bf08b;
+            font-size: 16px;
+        }
+        
+        .time-frame-done {
+            background-color: rgb(226, 226, 226) !important;
+        }
+        
+        .vis-item,
+        .vis-item.vis-line {
+            border-width: 1px;
+        }
+        
+        .vis-time-axis .vis-grid.vis-odd {
+            background: #f7f7f7;
+        }
+        
+        #title {
+            text-align: center;
+            color: #636363;
+            font-size: 2em;
+        }
+    </style>
+</head>
+</head>
+
+
+<body>
+    <div id="wrp">
+        <div id="title">Time frames queue</div>
+        <div id="toolbar">
+            <button onclick="tq.add()">add</button>
+            <button onclick="tq.gotonow()">now</button>
+            <button onclick="tq.clear()">clear</button>
+            <button onclick="tq.track(this)">track</button>
+        </div>
+        <div id="visualization"></div>
+    </div>
+    <div id="sound"></div>
+</body>
+
+
+
+</html>
