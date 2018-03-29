@@ -132,10 +132,8 @@ function run() {
                     items.update({ id: x.id, isnotified: 1 })
                     let e = document.getElementById(`tfh-${x.id}`)
                     if (e) e.parentElement.classList.add('time-frame-done')
-
                 }
             } else if (Date.now() - x.end > hideAfterMs) {
-                console.log(Date.now() - x.end)
                 items.remove(x.id)
             }
         }
