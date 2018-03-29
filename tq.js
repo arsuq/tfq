@@ -9,32 +9,30 @@ function run() {
     let tIdGen = 1
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 10 //10h
+    const SOUND = 'audio/1'
 
-    function gotonow() {
-        timeline.moveTo(new Date())
-    }
+    function gotonow() { timeline.moveTo(new Date()) }
 
-    function notifyMe(text) {
-        const SOUND = 'audio/1'
-        let options = {
-            body: text,
-            // image: 'timer.png',
-            icon: 'timer.png'
-        }
-
-        if (!("Notification" in window))
-            alert("This browser does not support system notifications")
-        else if (Notification.permission === "granted") {
-            new Notification("End of time frame", options)
-            playSound(SOUND)
-        } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission(function(permission) {
-                if (permission === "granted") {
-                    new Notification("End of time frame", options)
-                    playSound(SOUND)
-                }
-            });
-        }
+    function notify(text) {
+        try {
+            let ntfArgs = {
+                body: text,
+                icon: 'timer.png'
+            }
+            if (!("Notification" in window))
+                alert("This browser does not support system notifications")
+            else if (Notification.permission === "granted") {
+                new Notification("End of time frame", ntfArgs)
+                playSound(SOUND)
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(function(result) {
+                    if (permission === "granted") {
+                        new Notification("End of time frame", ntfArgs)
+                        playSound(SOUND)
+                    }
+                });
+            }
+        } catch (ex) {}
 
     }
 
@@ -128,7 +126,7 @@ function run() {
         for (let x of tq.items.get()) {
             if (x.isnotified < 1) {
                 if (x.end < Date.now()) {
-                    notifyMe(x.name)
+                    notify(x.name)
                     items.update({ id: x.id, isnotified: 1 })
                     let e = document.getElementById(`tfh-${x.id}`)
                     if (e) e.parentElement.classList.add('time-frame-done')
