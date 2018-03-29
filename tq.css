@@ -12,7 +12,7 @@ body {
 }
 
 .toggle {
-    background-color: lightgreen !important;
+    background: linear-gradient(#9df4ff, #31e8ff) !important;
 }
 
 #toolbar {
