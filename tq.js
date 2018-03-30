@@ -190,7 +190,7 @@ function run() {
         onMoving: function(item, callback) {
             let tf = document.getElementById('tf-' + item.id)
             if (tf) {
-                if (!tf.classList.contains('.time-frame-done ')) {
+                if (!tf.parentElement.parentElement.classList.contains('time-frame-done')) {
                     let diff = datediff(item)
                     tf.innerText = `${diff.h}h:${diff.m}m`
                     callback(item)
@@ -213,7 +213,9 @@ function run() {
                     notify(x.name, 1)
                     items.update({ id: x.id, isendnotified: 1 })
                     let e = document.getElementById(`tfh-${x.id}`)
-                    if (e) e.parentElement.classList.add('time-frame-done')
+                    if (e && e.parentElement) {
+                        e.parentElement.classList.add('time-frame-done')
+                    }
                     save_to_ls()
                 } else {
                     let now = Date.now()
