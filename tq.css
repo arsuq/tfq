@@ -3,7 +3,8 @@
 }
 
 body {
-    background-color: #f2f2f2;
+    /* background-color: #f2f2f2; */
+    background: url(paper.png);
     font-family: monospace;
     --border: 1px solid gray;
     --font-family: monospace;
@@ -12,7 +13,7 @@ body {
 }
 
 .toggle {
-    background: linear-gradient(#9df4ff, #31e8ff) !important;
+    background: linear-gradient(#e2fcff, #31e8ff) !important;
 }
 
 #toolbar {

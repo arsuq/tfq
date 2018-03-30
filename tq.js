@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function run() {
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 10 //10h
-    const SOUND = 'audio/1'
+    const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
 
@@ -18,21 +18,29 @@ function run() {
 
     function gotonow() { timeline.moveTo(new Date()) }
 
-    function notify(text, sound = SOUND) {
+    function notify(text, isEnd = 1) {
         try {
             let ntfArgs = {
                 body: text,
-                icon: 'timer.png'
+                icon: 'timer.png',
+                badge: 'timer.png',
+                vibrate: [100, 50, 80]
+            }
+            let sound = EMD_SOUND
+            let title = 'Out of time frame'
+            if (isEnd < 1) {
+                sound = START_SOUND
+                title = 'In time frame'
             }
             if (!("Notification" in window))
                 alert("This browser does not support system notifications")
             else if (Notification.permission === "granted") {
-                new Notification("End of time frame", ntfArgs)
+                new Notification(title, ntfArgs)
                 playSound(sound)
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
                     if (permission === "granted") {
-                        new Notification("End of time frame", ntfArgs)
+                        new Notification(title, ntfArgs)
                         playSound(sound)
                     }
                 });
@@ -49,16 +57,29 @@ function run() {
     function add() {
         tIdGen = getTimeFrameId()
         let now = new Date()
-        let name = prompt('Time frame name:')
+        let name = prompt('Time frame name: (--mm sets initial duration in minutes)')
+        let defMin = 60
+        let hasmin = name.indexOf(' --')
+        if (hasmin > 2) {
+            defMin = parseInt(name.substring(hasmin + 3))
+            if (isNaN(defMin)) { return 60 }
+            if (defMin < 0 || defMin > 999) defMin = 60
+            name = name.substring(0, hasmin)
+        }
+
+        let dd = datediff({ start: new Date(), end: new Date().setMinutes(now.getMinutes() + defMin) })
+        let initlabel = `${dd.h}h:${dd.m}m`
+
         if (name) {
-            let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">1h</span></div>`
+            let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
             let tframe = {
                 id: tIdGen,
                 name: name,
                 content: c,
                 start: now,
-                end: new Date().setHours(now.getHours() + 1),
-                isnotified: 0
+                end: new Date().setMinutes(now.getMinutes() + defMin),
+                isendnotified: 0,
+                isstartnotified: 0
             }
             items.add(tframe)
         }
@@ -70,11 +91,11 @@ function run() {
             for (let i of items.get())
                 All.push(JSON.stringify(i))
             localStorage.setItem(LS_KEY, JSON.stringify(All))
-            btn.innerText = 'saved'
+            if (btn) btn.innerText = 'saved'
         } catch (ex) {
-            btn.innerText = 'fail'
+            if (btn) btn.innerText = 'fail'
         } finally {
-            setTimeout(() => { btn.innerText = 'save' }, 800)
+            if (btn) setTimeout(() => { btn.innerText = 'save' }, 800)
         }
     }
 
@@ -162,12 +183,20 @@ function run() {
     // main ticker
     setInterval(function() {
         for (let x of tq.items.get()) {
-            if (x.isnotified < 1) {
+            if (x.isendnotified < 1) {
                 if (x.end < Date.now()) {
-                    notify(x.name)
-                    items.update({ id: x.id, isnotified: 1 })
+                    notify(x.name, 1)
+                    items.update({ id: x.id, isendnotified: 1 })
                     let e = document.getElementById(`tfh-${x.id}`)
                     if (e) e.parentElement.classList.add('time-frame-done')
+                    save_to_ls()
+                } else {
+                    let now = Date.now()
+                    if (now > x.start && now < x.end && x.isstartnotified < 1) {
+                        notify(x.name, 0)
+                        items.update({ id: x.id, isstartnotified: 1 })
+                        save_to_ls()
+                    }
                 }
             } else if (Date.now() - x.end > hideAfterMs) {
                 items.remove(x.id)
@@ -192,13 +221,18 @@ function run() {
         // set the past time frames inactive (one time only) 
     setTimeout(function() {
         for (let i of items.get()) {
-            if (i.isnotified > 0) {
+            if (i.isendnotified > 0) {
                 let tf = document.getElementById(`tfh-${i.id}`)
                 if (tf) tf.parentElement.classList.add('time-frame-done')
             }
         }
         gotonow()
     }, 5000)
+
+
+    document.addEventListener("keypress", function(e) {
+        if (e && e.key == '+') add()
+    });
 
     return {
         add,
@@ -209,6 +243,8 @@ function run() {
         track,
         save_to_ls,
         load_from_ls,
-        clear_ls
+        clear_ls,
+        zoomin: function() { timeline.zoomIn(1) },
+        zoomout: function() { timeline.zoomOut(1) }
     }
 }

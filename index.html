@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Time queues</title>
+    <title>Time frames</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <script src="tq.js"></script>
     <script src="moment.js"></script>
@@ -37,6 +37,7 @@
             color: #636363;
             font-size: 2em;
             margin: 0.5em;
+            padding-top: 0.5em;
         }
     </style>
 </head>
@@ -45,12 +46,14 @@
 
 <body>
     <div id="wrp">
-        <div id="title">Time frames queue</div>
+        <div id="title"><img src="logo.png" width="250"></div>
         <div id="toolbar">
-            <button onclick="tq.add()">add</button>
-            <button onclick="tq.save_to_ls(this)">save</button>
-            <button onclick="tq.gotonow()">now</button>
-            <button onclick="tq.track(this)">track</button>
+            <button onclick="tq.add()" title="add"><img src="/icons/new.png"></button>
+            <button onclick="tq.save_to_ls(this)" title="save"><img src="/icons/save.png"></button>
+            <button onclick="tq.gotonow()" title="now"><img src="/icons/now.png"></button>
+            <button onclick="tq.track(this)" title="track"><img src="/icons/track.png"></button>
+            <button onclick="tq.zoomin()" title="zoom in"><img src="/icons/zoomin.png"></button>
+            <button onclick="tq.zoomout()" title="zoom out"><img src="/icons/zoomout.png"></button>
         </div>
         <div id="visualization"></div>
     </div>
