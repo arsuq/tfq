@@ -62,7 +62,7 @@ function run() {
         let hasmin = name.indexOf(' --') // duration in min
         let append = name.indexOf(' <<') // append
 
-        if (hasmin > 2) {
+        if (hasmin > 0) {
             defMin = parseInt(name.substring(hasmin + 3))
             if (isNaN(defMin)) { return 60 }
             if (defMin < 0 || defMin > 999) defMin = 60
