@@ -77,3 +77,11 @@ body {
     border-width: 1px;
     border-color: rgb(70, 70, 70);
 }
+
+.saved-ok {
+    background: linear-gradient(#ffffff, #70dd61) !important;
+}
+
+.saved-fail {
+    background: linear-gradient(#ffffff, #d15151) !important;
+}

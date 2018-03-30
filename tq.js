@@ -76,7 +76,7 @@ function run() {
                 id: tIdGen,
                 name: name,
                 content: c,
-                start: now,
+                start: new Date().setMinutes(now.getMinutes() + 1),
                 end: new Date().setMinutes(now.getMinutes() + defMin),
                 isendnotified: 0,
                 isstartnotified: 0
@@ -91,11 +91,14 @@ function run() {
             for (let i of items.get())
                 All.push(JSON.stringify(i))
             localStorage.setItem(LS_KEY, JSON.stringify(All))
-            if (btn) btn.innerText = 'saved'
+            btn.classList.add('saved-ok')
         } catch (ex) {
-            if (btn) btn.innerText = 'fail'
+            btn.classList.add('saved-fail')
         } finally {
-            if (btn) setTimeout(() => { btn.innerText = 'save' }, 800)
+            setTimeout(function() {
+                btn.classList.remove('saved-ok')
+                btn.classList.remove('saved-fail')
+            }, 800)
         }
     }
 
