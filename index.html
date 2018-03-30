@@ -11,7 +11,6 @@
     <script src="moment.js"></script>
     <link href="tq.css" rel="stylesheet" type="text/css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
-
     <style>
         .vis-item {
             border: 1px solid #b4b4b4;
@@ -48,13 +47,15 @@
     <div id="wrp">
         <div id="title"><img src="logo.png" width="250"></div>
         <div id="toolbar">
-            <button onclick="tq.add()" title="add"><img src="icons/new.png"></button>
-            <button onclick="tq.save_to_ls(this)" title="save"><img src="icons/save.png"></button>
-            <button onclick="tq.clear_ls(this)" title="clear"><img src="icons/delete.png"></button>
-            <button onclick="tq.gotonow()" title="now"><img src="icons/now.png"></button>
-            <button onclick="tq.track(this)" title="track"><img src="icons/track.png"></button>
-            <button onclick="tq.zoomin()" title="zoom in"><img src="icons/zoomin.png"></button>
-            <button onclick="tq.zoomout()" title="zoom out"><img src="icons/zoomout.png"></button>
+            <div>
+                <button onclick="tq.add()" title="add"><img src="icons/new.png"></button>
+                <button onclick="tq.save_to_ls(this)" title="save"><img src="icons/save.png"></button>
+                <button onclick="tq.clear_ls(this)" title="clear"><img src="icons/delete.png"></button>
+                <button onclick="tq.gotonow()" title="now"><img src="icons/now.png"></button>
+                <button onclick="tq.track(this)" title="track"><img src="icons/track.png"></button>
+                <button onclick="tq.zoomin()" title="zoom in"><img src="icons/zoomin.png"></button>
+                <button onclick="tq.zoomout()" title="zoom out"><img src="icons/zoomout.png"></button>
+            </div>
         </div>
         <div id="visualization"></div>
     </div>

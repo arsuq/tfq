@@ -1,6 +1,5 @@
 var tq = null
 
-
 document.addEventListener('DOMContentLoaded', function() {
     tq = run()
 });
@@ -98,14 +97,15 @@ function run() {
             for (let i of items.get())
                 All.push(JSON.stringify(i))
             localStorage.setItem(LS_KEY, JSON.stringify(All))
-            btn.classList.add('b-ok')
+            if (btn) btn.classList.add('b-ok')
         } catch (ex) {
-            btn.classList.add('b-fail')
+            if (btn) btn.classList.add('b-fail')
         } finally {
-            setTimeout(function() {
-                btn.classList.remove('b-ok')
-                btn.classList.remove('b-fail')
-            }, 800)
+            if (btn)
+                setTimeout(function() {
+                    btn.classList.remove('b-ok')
+                    btn.classList.remove('b-fail')
+                }, 800)
         }
     }
 
@@ -119,15 +119,16 @@ function run() {
             if (confirm('Delete all frames from the local storage?')) {
                 localStorage.setItem(LS_KEY, '')
                 items.clear()
-                btn.classList.add('b-ok')
+                if (btn) btn.classList.add('b-ok')
             }
         } catch (ex) {
-            btn.classList.add('b-fail')
+            if (btn) btn.classList.add('b-fail')
         } finally {
-            setTimeout(function() {
-                btn.classList.remove('b-ok')
-                btn.classList.remove('b-fail')
-            }, 800)
+            if (btn)
+                setTimeout(function() {
+                    btn.classList.remove('b-ok')
+                    btn.classList.remove('b-fail')
+                }, 800)
         }
     }
 
