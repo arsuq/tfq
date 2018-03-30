@@ -23,9 +23,10 @@ body {
 
 #toolbar button {
     background: linear-gradient(white, #ececec);
-    padding: 0.6em;
-    padding-left: 1em;
-    padding-right: 1em;
+    padding-top: 7px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
     border: 1px solid #b9b9b9;
     cursor: pointer;
     user-select: none;
@@ -78,10 +79,10 @@ body {
     border-color: rgb(70, 70, 70);
 }
 
-.saved-ok {
+.b-ok {
     background: linear-gradient(#ffffff, #70dd61) !important;
 }
 
-.saved-fail {
+.b-fail {
     background: linear-gradient(#ffffff, #d15151) !important;
 }

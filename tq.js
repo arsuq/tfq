@@ -23,8 +23,8 @@ function run() {
             let ntfArgs = {
                 body: text,
                 icon: 'timer.png',
-                badge: 'timer.png',
-                vibrate: [100, 50, 80]
+                badge: 'timer.png'
+                    // vibrate: [100, 50, 80]
             }
             let sound = EMD_SOUND
             let title = 'Out of time frame'
@@ -57,9 +57,11 @@ function run() {
     function add() {
         tIdGen = getTimeFrameId()
         let now = new Date()
-        let name = prompt('Time frame name: (--mm sets initial duration in minutes)')
+        let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n << will start 1 min from now, the defaut is the last frame's end \n + is a shortcut to add `)
         let defMin = 60
-        let hasmin = name.indexOf(' --')
+        let hasmin = name.indexOf(' --') // duration in min
+        let append = name.indexOf(' <<') // append
+
         if (hasmin > 2) {
             defMin = parseInt(name.substring(hasmin + 3))
             if (isNaN(defMin)) { return 60 }
@@ -69,6 +71,11 @@ function run() {
 
         let dd = datediff({ start: new Date(), end: new Date().setMinutes(now.getMinutes() + defMin) })
         let initlabel = `${dd.h}h:${dd.m}m`
+        let startTime = new Date(now.setMinutes(now.getMinutes() + 1)) // in 1 min
+        if (append < 0)
+            for (let i of items.get())
+                if (i.end && i.end > startTime)
+                    startTime = new Date(i.end)
 
         if (name) {
             let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
@@ -76,8 +83,8 @@ function run() {
                 id: tIdGen,
                 name: name,
                 content: c,
-                start: new Date().setMinutes(now.getMinutes() + 1),
-                end: new Date().setMinutes(now.getMinutes() + defMin),
+                start: startTime,
+                end: new Date(startTime).setMinutes(startTime.getMinutes() + defMin),
                 isendnotified: 0,
                 isstartnotified: 0
             }
@@ -91,13 +98,13 @@ function run() {
             for (let i of items.get())
                 All.push(JSON.stringify(i))
             localStorage.setItem(LS_KEY, JSON.stringify(All))
-            btn.classList.add('saved-ok')
+            btn.classList.add('b-ok')
         } catch (ex) {
-            btn.classList.add('saved-fail')
+            btn.classList.add('b-fail')
         } finally {
             setTimeout(function() {
-                btn.classList.remove('saved-ok')
-                btn.classList.remove('saved-fail')
+                btn.classList.remove('b-ok')
+                btn.classList.remove('b-fail')
             }, 800)
         }
     }
@@ -107,8 +114,21 @@ function run() {
         return allJson ? JSON.parse(allJson) : null
     }
 
-    function clear_ls() {
-        localStorage.setItem(LS_KEY, '')
+    function clear_ls(btn) {
+        try {
+            if (confirm('Delete all frames from the local storage?')) {
+                localStorage.setItem(LS_KEY, '')
+                items.clear()
+                btn.classList.add('b-ok')
+            }
+        } catch (ex) {
+            btn.classList.add('b-fail')
+        } finally {
+            setTimeout(function() {
+                btn.classList.remove('b-ok')
+                btn.classList.remove('b-fail')
+            }, 800)
+        }
     }
 
     function clear() {
@@ -143,6 +163,7 @@ function run() {
         zoomMin: 1000 * 20,
         zoomMax: 1000 * 60 * 60 * 24 * 31 * 2, // 2 months in milliseconds
         height: '350px',
+        // margin: { axis: 25, item: { vertical: 8, horizontal: -0.5 } },
         multiselect: true,
         editable: {
             add: false,
