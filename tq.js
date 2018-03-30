@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function run() {
+    let web_worker = null
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 10 //10h
     const EMD_SOUND = 'audio/1'
@@ -215,8 +216,20 @@ function run() {
     let timeline = new vis.Timeline(container, items, options)
     gotonow()
 
+
+    function start_web_workwer() {
+        if (typeof(Worker) !== "undefined") {
+            web_worker = new Worker("bw.js");
+            web_worker.onmessage = function(e) {
+                tick();
+            };
+        } else { window.alert("I need web workers."); }
+    }
+
+    start_web_workwer()
+
     // main ticker
-    setInterval(function() {
+    function tick() {
         for (let x of tq.items.get()) {
             if (x.isendnotified < 1) {
                 if (x.end < Date.now()) {
@@ -240,7 +253,7 @@ function run() {
             }
         }
         if (centerNow > 0) gotonow()
-    }, 1000)
+    }
 
     function track(btn) {
         btn.classList.toggle('toggle')
@@ -270,6 +283,9 @@ function run() {
     document.addEventListener("keypress", function(e) {
         if (e && e.key == '+') add()
     });
+
+
+
 
     return {
         add,
