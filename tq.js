@@ -45,11 +45,11 @@ function run() {
             if (!("Notification" in window))
                 alert("This browser does not support system notifications")
             else if (Notification.permission === "granted") {
-                new Notification(title, ntfArgs)
+                let n = new Notification(title, ntfArgs);
                 playSound(sound)
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
-                    if (permission === "granted") {
+                    if (result === "granted") {
                         new Notification(title, ntfArgs)
                         playSound(sound)
                     }
