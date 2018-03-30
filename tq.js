@@ -6,14 +6,19 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function run() {
-    let tIdGen = 1
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 10 //10h
     const SOUND = 'audio/1'
+    const START_SOUND = 'audio/2'
+    const LS_KEY = 'all-time-frames'
+
+    function getTimeFrameId() {
+        return new Date().getTime()
+    }
 
     function gotonow() { timeline.moveTo(new Date()) }
 
-    function notify(text) {
+    function notify(text, sound = SOUND) {
         try {
             let ntfArgs = {
                 body: text,
@@ -23,12 +28,12 @@ function run() {
                 alert("This browser does not support system notifications")
             else if (Notification.permission === "granted") {
                 new Notification("End of time frame", ntfArgs)
-                playSound(SOUND)
+                playSound(sound)
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
                     if (permission === "granted") {
                         new Notification("End of time frame", ntfArgs)
-                        playSound(SOUND)
+                        playSound(sound)
                     }
                 });
             }
@@ -42,20 +47,44 @@ function run() {
     }
 
     function add() {
-        tIdGen++
+        tIdGen = getTimeFrameId()
         let now = new Date()
         let name = prompt('Time frame name:')
         if (name) {
             let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">1h</span></div>`
-            items.add({
+            let tframe = {
                 id: tIdGen,
                 name: name,
                 content: c,
                 start: now,
                 end: new Date().setHours(now.getHours() + 1),
                 isnotified: 0
-            })
+            }
+            items.add(tframe)
         }
+    }
+
+    function save_to_ls(btn) {
+        try {
+            let All = []
+            for (let i of items.get())
+                All.push(JSON.stringify(i))
+            localStorage.setItem(LS_KEY, JSON.stringify(All))
+            btn.innerText = 'saved'
+        } catch (ex) {
+            btn.innerText = 'fail'
+        } finally {
+            setTimeout(() => { btn.innerText = 'save' }, 800)
+        }
+    }
+
+    function load_from_ls() {
+        let allJson = localStorage.getItem(LS_KEY)
+        return allJson ? JSON.parse(allJson) : null
+    }
+
+    function clear_ls() {
+        localStorage.setItem(LS_KEY, '')
     }
 
     function clear() {
@@ -77,10 +106,13 @@ function run() {
 
     var container = document.getElementById('visualization');
     let now = new Date()
-
-    let d2 = (new Date().setHours(now.getHours() + 1))
-
     var items = new vis.DataSet([]);
+
+    let saved = load_from_ls()
+    if (saved && saved.length > 0)
+        for (let si of saved)
+            items.add(JSON.parse(si))
+
     var options = {
         start: new Date(now).setDate(now.getHours() - 2),
         end: new Date(now).setDate(now.getHours() + 2),
@@ -92,7 +124,8 @@ function run() {
             add: false,
             updateTime: true,
             updateGroup: true,
-            remove: true
+            remove: true,
+            updateTime: true
         },
         showCurrentTime: true,
         onAdd: function(item, callback) {
@@ -111,17 +144,22 @@ function run() {
         onMoving: function(item, callback) {
             let tf = document.getElementById('tf-' + item.id)
             if (tf) {
-                let diff = datediff(item)
-                tf.innerText = `${diff.h}h:${diff.m}m`
-                callback(item)
+                if (!tf.classList.contains('.time-frame-done ')) {
+                    let diff = datediff(item)
+                    tf.innerText = `${diff.h}h:${diff.m}m`
+                    callback(item)
+                } else callback(null)
             } else callback(null)
+        },
+        onMove: function(item, callback) {
+            callback(item)
         }
-
     };
 
-    var timeline = new vis.Timeline(container, items, options)
+    let timeline = new vis.Timeline(container, items, options)
     gotonow()
 
+    // main ticker
     setInterval(function() {
         for (let x of tq.items.get()) {
             if (x.isnotified < 1) {
@@ -143,14 +181,24 @@ function run() {
         centerNow = centerNow == 1 ? 0 : 1;
     }
 
+    // zoom
     for (let i = 0; i < 4; i++)
         setTimeout(function() {
             timeline.zoomIn(1)
         }, i * 500)
 
+    //center
+    setTimeout(function() { gotonow() }, 2100)
+        // set the past time frames inactive (one time only) 
     setTimeout(function() {
+        for (let i of items.get()) {
+            if (i.isnotified > 0) {
+                let tf = document.getElementById(`tfh-${i.id}`)
+                if (tf) tf.parentElement.classList.add('time-frame-done')
+            }
+        }
         gotonow()
-    }, 2100)
+    }, 5000)
 
     return {
         add,
@@ -158,6 +206,9 @@ function run() {
         timeline,
         clear,
         items,
-        track
+        track,
+        save_to_ls,
+        load_from_ls,
+        clear_ls
     }
 }
