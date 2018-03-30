@@ -2,6 +2,12 @@ var tq = null
 
 document.addEventListener('DOMContentLoaded', function() {
     tq = run()
+
+    if ('servideWorker' in navigator) {
+        try {
+            navigator.serviceWorker.register('sw.js');
+        } catch (ex) { console.log(ex) }
+    }
 });
 
 function run() {
