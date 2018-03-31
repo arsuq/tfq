@@ -23,6 +23,8 @@ function run() {
     const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
+    let max_date = Date.now()
+
 
     function getTimeFrameId() {
         return new Date().getTime()
@@ -73,7 +75,7 @@ function run() {
         let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n << will start 1 min from now, the defaut is the last frame's end \n + is a shortcut to add `)
         let defMin = 60
         let hasmin = name.indexOf(' --') // duration in min
-        let append = name.indexOf(' <<') // append
+        let immediate = name.indexOf(' <<') // immediate start
 
         if (hasmin > 0) {
             defMin = parseInt(name.substring(hasmin + 3))
@@ -85,19 +87,18 @@ function run() {
         let dd = datediff({ start: new Date(), end: new Date().setMinutes(now.getMinutes() + defMin) })
         let initlabel = `${dd.h}h:${dd.m}m`
         let startTime = new Date(now.setMinutes(now.getMinutes() + 1)) // in 1 min
-        if (append < 0)
-            for (let i of items.get())
-                if (i.end && i.end > startTime)
-                    startTime = new Date(i.end)
+        if (immediate < 0) startTime = new Date(max_date)
 
         if (name) {
+            let endTime = new Date(startTime).setMinutes(startTime.getMinutes() + defMin)
+            if (endTime > max_date) max_date = endTime
             let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
             let tframe = {
                 id: tIdGen,
                 name: name,
                 content: c,
                 start: startTime,
-                end: new Date(startTime).setMinutes(startTime.getMinutes() + defMin),
+                end: endTime,
                 isendnotified: 0,
                 isstartnotified: 0
             }
@@ -169,8 +170,13 @@ function run() {
 
     let saved = load_from_ls()
     if (saved && saved.length > 0)
-        for (let si of saved)
-            items.add(JSON.parse(si))
+        for (let si of saved) {
+            let tf = JSON.parse(si)
+            if (tf) {
+                if (tf.end && tf.end > max_date) max_date = tf.end
+                items.add(tf)
+            }
+        }
 
     var options = {
         start: new Date(now).setDate(now.getHours() - 2),
