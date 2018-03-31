@@ -46,19 +46,17 @@ function run() {
                     // sound: sound // not supported yet
             }
 
-            if (!("Notification" in window))
-                alert("This browser does not support system notifications")
-            else if (Notification.permission === "granted") {
+            let granted = () => {
                 if (swreg) swreg.showNotification(title, ntfArgs)
                 else new Notification(title, ntfArgs)
                 playSound(sound)
-            } else if (Notification.permission !== 'denied') {
+            }
+
+            if (!("Notification" in window)) alert("This browser does not support system notifications")
+            else if (Notification.permission === "granted") granted()
+            else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
-                    if (result === "granted") {
-                        if (swreg) swreg.showNotification(title, ntfArgs)
-                        else new Notification(title, ntfArgs)
-                        playSound(sound)
-                    }
+                    if (result === "granted") granted()
                 });
             }
         } catch (ex) {}
