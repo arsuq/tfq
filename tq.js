@@ -1,10 +1,12 @@
 var tq = null
+var swreg = null
 
 document.addEventListener('DOMContentLoaded', function() {
     tq = run()
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/tfq/sw.js').then(function(registration) {
+            swreg = registration
             console.log('Service worker registration succeeded:', registration);
         }).catch(function(error) {
             console.log('Service worker registration failed:', error);
@@ -33,8 +35,7 @@ function run() {
             let ntfArgs = {
                 body: text,
                 icon: 'timer.png',
-                badge: 'timer.png'
-                    // vibrate: [100, 50, 80]
+                silent: true
             }
             let sound = EMD_SOUND
             let title = 'Out of time frame'
@@ -45,18 +46,19 @@ function run() {
             if (!("Notification" in window))
                 alert("This browser does not support system notifications")
             else if (Notification.permission === "granted") {
-                let n = new Notification(title, ntfArgs);
+                if (swreg) swreg.showNotification(title, ntfArgs)
+                else new Notification(title, ntfArgs)
                 playSound(sound)
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
                     if (result === "granted") {
-                        new Notification(title, ntfArgs)
+                        if (swreg) swreg.showNotification(title, ntfArgs)
+                        else Notification(title, ntfArgs)
                         playSound(sound)
                     }
                 });
             }
         } catch (ex) {}
-
     }
 
     function playSound(fn) {
