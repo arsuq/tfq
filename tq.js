@@ -87,8 +87,7 @@ function run() {
         let dd = datediff({ start: new Date(), end: new Date().setMinutes(now.getMinutes() + defMin) })
         let initlabel = `${dd.h}h:${dd.m}m`
         let startTime = new Date(now.setMinutes(now.getMinutes() + 1)) // in 1 min
-        if (immediate < 0) startTime = new Date(max_date)
-
+        if (immediate < 0 && startTime < max_date) startTime = new Date(max_date)
         if (name) {
             let endTime = new Date(startTime).setMinutes(startTime.getMinutes() + defMin)
             if (endTime > max_date) max_date = endTime
@@ -173,7 +172,10 @@ function run() {
         for (let si of saved) {
             let tf = JSON.parse(si)
             if (tf) {
-                if (tf.end && tf.end > max_date) max_date = tf.end
+                if (tf.end) {
+                    let tfendDate = new Date(tf.end)
+                    if (tfendDate > max_date) max_date = tf.end
+                }
                 items.add(tf)
             }
         }
