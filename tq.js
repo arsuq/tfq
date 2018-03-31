@@ -41,27 +41,23 @@ function run() {
             let ntfArgs = {
                 body: text,
                 icon: 'timer.png',
-                badge: '/icons/new.png',
-                // silent: true,
-                sound: sound
+                badge: 'icons/new.png'
+                    // silent: true,
+                    // sound: sound // not supported yet
             }
 
             if (!("Notification" in window))
                 alert("This browser does not support system notifications")
             else if (Notification.permission === "granted") {
                 if (swreg) swreg.showNotification(title, ntfArgs)
-                else {
-                    new Notification(title, ntfArgs)
-                    playSound(sound)
-                }
+                else new Notification(title, ntfArgs)
+                playSound(sound)
             } else if (Notification.permission !== 'denied') {
                 Notification.requestPermission().then(function(result) {
                     if (result === "granted") {
                         if (swreg) swreg.showNotification(title, ntfArgs)
-                        else {
-                            Notification(title, ntfArgs)
-                            playSound(sound)
-                        }
+                        else new Notification(title, ntfArgs)
+                        playSound(sound)
                     }
                 });
             }
