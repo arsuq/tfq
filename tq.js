@@ -23,7 +23,7 @@ function run() {
     const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
-    let max_date = Date.now()
+    let max_date = new Date()
 
 
     function getTimeFrameId() {
@@ -90,7 +90,7 @@ function run() {
         if (immediate < 0 && startTime < max_date) startTime = new Date(max_date)
         if (name) {
             let endTime = new Date(startTime).setMinutes(startTime.getMinutes() + defMin)
-            if (endTime > max_date) max_date = endTime
+            if (endTime > max_date) max_date = new Date(endTime)
             let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
             let tframe = {
                 id: tIdGen,
@@ -174,7 +174,7 @@ function run() {
             if (tf) {
                 if (tf.end) {
                     let tfendDate = new Date(tf.end)
-                    if (tfendDate > max_date) max_date = tf.end
+                    if (tfendDate > max_date) max_date = new Date(tf.end)
                 }
                 items.add(tf)
             }
