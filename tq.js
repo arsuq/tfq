@@ -217,6 +217,10 @@ function run() {
     };
 
     let timeline = new vis.Timeline(container, items, options)
+
+    timeline.on('rangechanged', function(props) {
+        markdead()
+    });
     gotonow()
 
 
@@ -271,24 +275,23 @@ function run() {
 
     //center
     setTimeout(function() { gotonow() }, 2100)
-        // set the past time frames inactive (one time only) 
-    setTimeout(function() {
-        for (let i of items.get()) {
+
+    // set the past time-frames inactive 
+    // hokked on timeline drag for the items are not rendered initially 
+    // if you find an item render event - plug it there
+    function markdead() {
+        for (let i of items.get())
             if (i.isendnotified > 0) {
                 let tf = document.getElementById(`tfh-${i.id}`)
                 if (tf) tf.parentElement.classList.add('time-frame-done')
             }
-        }
-        gotonow()
-    }, 5000)
+    }
 
+    setTimeout(function() { markdead() }, 5000)
 
     document.addEventListener("keypress", function(e) {
         if (e && e.key == '+') add()
     });
-
-
-
 
     return {
         add,
