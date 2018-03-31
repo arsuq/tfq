@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function run() {
     let web_worker = null
     let centerNow = 0
-    let hideAfterMs = 1000 * 60 * 60 * 10 //10h
+    let hideAfterMs = 1000 * 60 * 60 * 24 * 365 // 1 year
     const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
@@ -100,6 +100,7 @@ function run() {
                 end: endTime,
                 isendnotified: 0,
                 isstartnotified: 0
+                    // type: 'range'
             }
             items.add(tframe)
         }
@@ -212,11 +213,9 @@ function run() {
         onMoving: function(item, callback) {
             let tf = document.getElementById('tf-' + item.id)
             if (tf) {
-                if (!tf.parentElement.parentElement.classList.contains('time-frame-done')) {
-                    let diff = datediff(item)
-                    tf.innerText = `${diff.h}h:${diff.m}m`
-                    callback(item)
-                } else callback(null)
+                let diff = datediff(item)
+                tf.innerText = `${diff.h}h:${diff.m}m`
+                callback(item)
             } else callback(null)
         },
         onMove: function(item, callback) {
@@ -226,12 +225,21 @@ function run() {
 
     let timeline = new vis.Timeline(container, items, options)
 
-    timeline.on('rangechanged', function(props) {
-        markdead()
-    });
+    // when move around
+    // timeline.on('rangechanged', function(props) {
+    //     markdead()
+    // });
+
+    // timeline.on('select', function(d) {
+    //     console.log(d);
+    // });
+
     gotonow()
 
 
+    // there is no real use of the web worker, 
+    // all browsers will kill the ticker when 
+    // the page is not active
     function start_web_workwer() {
         if (typeof(Worker) !== "undefined") {
             web_worker = new Worker("bw.js");
@@ -249,7 +257,7 @@ function run() {
             if (x.isendnotified < 1) {
                 if (x.end < Date.now()) {
                     notify(x.name, 1)
-                    items.update({ id: x.id, isendnotified: 1 })
+                    items.update({ id: x.id, isendnotified: 1, editable: { updateTime: false, updateGroup: false, remove: true } })
                     let e = document.getElementById(`tfh-${x.id}`)
                     if (e && e.parentElement) {
                         e.parentElement.classList.add('time-frame-done')
@@ -283,19 +291,6 @@ function run() {
 
     //center
     setTimeout(function() { gotonow() }, 2100)
-
-    // set the past time-frames inactive 
-    // hokked on timeline drag for the items are not rendered initially 
-    // if you find an item render event - plug it there
-    function markdead() {
-        for (let i of items.get())
-            if (i.isendnotified > 0) {
-                let tf = document.getElementById(`tfh-${i.id}`)
-                if (tf) tf.parentElement.classList.add('time-frame-done')
-            }
-    }
-
-    setTimeout(function() { markdead() }, 5000)
 
     document.addEventListener("keypress", function(e) {
         if (e && e.key == '+') add()
