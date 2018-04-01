@@ -138,8 +138,10 @@ function run() {
                 All.push(JSON.stringify(i))
             localStorage.setItem(LS_KEY, JSON.stringify(All))
             if (btn) btn.classList.add('b-ok')
+            ntf('saved', 'ntf-ok')
         } catch (ex) {
             if (btn) btn.classList.add('b-fail')
+            ntf('failed', 'ntf-fail')
         } finally {
             if (btn)
                 setTimeout(function() {
@@ -160,9 +162,11 @@ function run() {
                 localStorage.setItem(LS_KEY, '')
                 items.clear()
                 if (btn) btn.classList.add('b-ok')
+                ntf('cleared', 'ntf-ok')
             }
         } catch (ex) {
             if (btn) btn.classList.add('b-fail')
+            ntf('clear failed', 'ntf-ok')
         } finally {
             if (btn)
                 setTimeout(function() {
@@ -295,6 +299,10 @@ function run() {
         let r = []
         if (sdt) r.push(sdt.toDate())
         if (edt) r.push(edt.toDate())
+        if (sdt >= edt) {
+            ntf('The time-frame duration is negative', 'ntf-fail', 5000)
+            return null
+        }
         return r
     }
 
@@ -315,6 +323,7 @@ function run() {
                         upd.content = t.outerHTML
                     }
                     items.update(upd)
+                    ntf('updated', 'ntf-ok')
                 }
             }
         }
@@ -442,8 +451,23 @@ function run() {
                 else frame.editable = { updateTime: false, remove: true }
                 items.update(frame)
                 updatelockbtn(frame)
+                    // let text = frame.editable.updateTime === true ? 'unlocked' : 'locked'
+                    // ntf('frame ' + text, 'ntf-ok')
             }
         }
+    }
+
+    let ntfdiv = document.getElementById('ntf')
+
+    function ntf(text, css, dur = 1000) {
+        ntfdiv.innerText = text
+        ntfdiv.classList.remove('hidden')
+        ntfdiv.classList.add(css)
+        setTimeout(function() {
+            ntfdiv.classList.add('hidden')
+            ntfdiv.classList.remove(css)
+            ntfdiv.innerText = ''
+        }, dur)
     }
 
     return {
