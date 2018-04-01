@@ -20,10 +20,21 @@ function run() {
     let web_worker = null
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 24 * 365 // 1 year
+    let selProps = null // editframe and cutframe depend on the currently selected item 
     const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
-    let max_date = new Date()
+
+    // returns either the selected frame or NOW + 1 min
+    function get_append_date() {
+        if (selProps && selProps.items && selProps.items.length > 0) {
+            let frame = items.get(selProps.items[0])
+            return new Date(frame.end)
+        } else {
+            let n = new Date()
+            return new Date(n.setMinutes(n.getMinutes() + 1))
+        }
+    }
 
 
     function getTimeFrameId() {
@@ -31,6 +42,19 @@ function run() {
     }
 
     function gotonow() { timeline.moveTo(new Date()) }
+
+    function gotolast() {
+        let n = new Date()
+        if (items) {
+            for (let i of items.get()) {
+                let ed = new Date(i.end)
+                if (ed > n) n = ed
+            }
+        }
+
+        timeline.moveTo(n)
+    }
+
 
     function notify(text, isEnd = 1) {
         try {
@@ -72,25 +96,22 @@ function run() {
     function add() {
         tIdGen = getTimeFrameId()
         let now = new Date()
-        let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n << will start 1 min from now, the defaut is the last frame's end \n + is a shortcut to add `)
+        let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n select a frame to append `)
         let defMin = 60
         let hasmin = name.indexOf(' --') // duration in min
-        let immediate = name.indexOf(' <<') // immediate start
 
         if (hasmin > 0) {
             defMin = parseInt(name.substring(hasmin + 3))
             if (isNaN(defMin)) { return 60 }
-            if (defMin < 0 || defMin > 999) defMin = 60
+            if (defMin < 0 || defMin > 9999) defMin = 60
             name = name.substring(0, hasmin)
         }
 
         let dd = datediff({ start: new Date(), end: new Date().setMinutes(now.getMinutes() + defMin) })
         let initlabel = `${dd.h}h:${dd.m}m`
-        let startTime = new Date(now.setMinutes(now.getMinutes() + 1)) // in 1 min
-        if (immediate < 0 && startTime < max_date) startTime = new Date(max_date)
+        let startTime = get_append_date()
         if (name) {
             let endTime = new Date(startTime).setMinutes(startTime.getMinutes() + defMin)
-            if (endTime > max_date) max_date = new Date(endTime)
             let c = `<div id="tfh-${tIdGen}"><b class="tf-text" >${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
             let tframe = {
                 id: tIdGen,
@@ -134,7 +155,6 @@ function run() {
             if (confirm('Delete all frames from the local storage?')) {
                 localStorage.setItem(LS_KEY, '')
                 items.clear()
-                max_date = new Date()
                 if (btn) btn.classList.add('b-ok')
             }
         } catch (ex) {
@@ -173,13 +193,7 @@ function run() {
     if (saved && saved.length > 0)
         for (let si of saved) {
             let tf = JSON.parse(si)
-            if (tf) {
-                if (tf.end) {
-                    let tfendDate = new Date(tf.end)
-                    if (tfendDate > max_date) max_date = new Date(tf.end)
-                }
-                items.add(tf)
-            }
+            if (tf) items.add(tf)
         }
 
     var options = {
@@ -225,9 +239,6 @@ function run() {
     };
 
     let timeline = new vis.Timeline(container, items, options)
-
-    // editframe and cutframe depend on the currently selected item 
-    let selProps = null
 
     timeline.on('select', function(d) {
         console.log(d);
@@ -337,6 +348,7 @@ function run() {
     return {
         add,
         gotonow,
+        gotolast,
         timeline,
         clear,
         items,
