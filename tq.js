@@ -24,16 +24,20 @@ function run() {
     const EMD_SOUND = 'audio/1'
     const START_SOUND = 'audio/2'
     const LS_KEY = 'all-time-frames'
+    let draggedtime = null
+    let lockbtn = document.getElementById('lockbtn');
 
-    // returns either the selected frame or NOW + 1 min
+    // returns either the selected frame or draggedtime or NOW + 1 min
     function get_append_date() {
         if (selProps && selProps.items && selProps.items.length > 0) {
             let frame = items.get(selProps.items[0])
-            return new Date(frame.end)
-        } else {
+            if (frame) return new Date(frame.end)
+        }
+
+        if (!draggedtime) {
             let n = new Date()
             return new Date(n.setMinutes(n.getMinutes() + 1))
-        }
+        } else return draggedtime
     }
 
 
@@ -231,6 +235,10 @@ function run() {
                 let diff = datediff(item)
                 tf.innerText = `${diff.h}h:${diff.m}m`
                 callback(item)
+                let s = new Date(item.start)
+                let e = new Date(item.end)
+                setDateToInputs(startDatePicker, startTimePicker, s)
+                setDateToInputs(endDatePicker, endTimePicker, e)
             } else callback(null)
         },
         onMove: function(item, callback) {
@@ -240,10 +248,79 @@ function run() {
 
     let timeline = new vis.Timeline(container, items, options)
 
+    timeline.addCustomTime(new Date())
+
+    timeline.on('timechange', function(event) {
+        draggedtime = new Date(event.time)
+    });
+
+    let startDatePicker = document.getElementById('startDatePicker')
+    let endDatePicker = document.getElementById('endDatePicker')
+    let startTimePicker = document.getElementById('startTimePicker')
+    let endTimePicker = document.getElementById('endTimePicker')
+
     timeline.on('select', function(d) {
         console.log(d);
         selProps = d
+        if (d && d.items && d.items.length > 0) {
+            let frame = items.get(selProps.items[0])
+            if (frame) {
+                let s = new Date(frame.start)
+                let e = new Date(frame.end)
+                setDateToInputs(startDatePicker, startTimePicker, s)
+                setDateToInputs(endDatePicker, endTimePicker, e)
+                updatelockbtn(frame)
+            }
+        }
     });
+
+    function updatelockbtn(frame) {
+        if (frame) {
+            if (!frame.editable) lockbtn.innerText = 'lock'
+            else lockbtn.innerText = frame.editable.updateTime === true ? 'lock' : 'unlock'
+        }
+    }
+
+    function setDateToInputs(inputDate, inputTime, date) {
+        if (date) {
+            let m = moment(date)
+            if (inputDate) inputDate.value = m.format('YYYY-MM-DD')
+            if (inputTime) inputTime.value = m.format('HH:mm')
+        }
+    }
+
+    function getDatesFromInputs() {
+        let sdt = moment(startDatePicker.value + " " + startTimePicker.value)
+        let edt = moment(endDatePicker.value + " " + endTimePicker.value)
+        let r = []
+        if (sdt) r.push(sdt.toDate())
+        if (edt) r.push(edt.toDate())
+        return r
+    }
+
+    function update_dates() {
+        if (selProps && selProps.items && selProps.items.length > 0) {
+            let frame = items.get(selProps.items[0])
+            if (frame) {
+                let dates = getDatesFromInputs()
+                if (dates && dates.length > 0) {
+                    let upd = { id: selProps.items[0] }
+                    if (dates[0]) upd.start = dates[0]
+                    if (dates[1]) upd.end = dates[1]
+                    let t = document.getElementById(`tfh-${selProps.items[0]}`)
+                    let tf = document.getElementById('tf-' + frame.id)
+                    if (t && tf) {
+                        let diff = datediff(upd)
+                        tf.innerText = `${diff.h}h:${diff.m}m`
+                        upd.content = t.outerHTML
+                    }
+                    items.update(upd)
+                }
+            }
+        }
+
+    }
+
 
     function editframe() {
         if (selProps.items && selProps.items.length > 0) {
@@ -345,8 +422,34 @@ function run() {
     });
 
 
+    function info() {
+        let i = document.getElementById('info')
+        i.classList.toggle('hidden')
+    }
+
+    function toggle_set_dates() {
+        let i = document.getElementById('dateTimePickers')
+        i.classList.toggle('hidden')
+    }
+
+
+    function lockframe() {
+        if (selProps && selProps.items && selProps.items.length > 0) {
+            let frame = items.get(selProps.items[0])
+            if (frame) {
+                if (frame.editable && frame.editable.updateTime != null)
+                    frame.editable.updateTime = !frame.editable.updateTime
+                else frame.editable = { updateTime: false, remove: true }
+                items.update(frame)
+                updatelockbtn(frame)
+            }
+        }
+    }
+
     return {
         add,
+        toggle_set_dates,
+        update_dates,
         gotonow,
         gotolast,
         timeline,
@@ -359,6 +462,8 @@ function run() {
         zoomin: function() { timeline.zoomIn(1) },
         zoomout: function() { timeline.zoomOut(1) },
         editframe,
-        cutframe
+        cutframe,
+        lockframe,
+        info
     }
 }

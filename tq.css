@@ -21,6 +21,7 @@ body {
     text-align: center;
 }
 
+.btn,
 #toolbar button {
     background: linear-gradient(white, #ececec);
     padding-top: 7px;
@@ -33,8 +34,10 @@ body {
     outline: none;
     color: #5c5c5c;
     border-radius: 0.35em;
+    margin-top: 7px;
 }
 
+.btn:hover,
 #toolbar button:hover {
     background: linear-gradient(#ffffff, #d4d4d4);
 }
@@ -93,4 +96,35 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+#dateTimePickers,
+#info {
+    text-align: center;
+}
+
+#infoframe {
+    max-width: 600px;
+    text-align: left;
+    margin: auto;
+}
+
+#infoframe img {
+    width: 16px;
+}
+
+#dateTimePickersInner {
+    max-width: 250px;
+    text-align: right;
+    margin: auto;
+    padding-bottom: 1em;
+}
+
+#dateTimePickersInner input {
+    margin-top: 5px;
+    width: 140px;
+}
+
+.dtpickrow {
+    padding: 4px;
 }

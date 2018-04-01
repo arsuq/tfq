@@ -53,6 +53,7 @@
         <div id="toolbar">
             <div>
                 <button onclick="tq.add()" title="add"><img src="icons/new.png"></button>
+                <button onclick="tq.toggle_set_dates()" title="set duration"><img src="icons/len.png"></button>
                 <button onclick="tq.save_to_ls(this)" title="save"><img src="icons/save.png"></button>
                 <button onclick="tq.clear_ls(this)" title="clear"><img src="icons/delete.png"></button>
                 <button onclick="tq.cutframe()" title="cut"><img src="icons/cut.png"></button>
@@ -61,14 +62,58 @@
                 <button onclick="tq.gotolast()" title="go to last"><img src="icons/last.png"></button>
                 <button onclick="tq.zoomin()" title="zoom in"><img src="icons/zoomin.png"></button>
                 <button onclick="tq.zoomout()" title="zoom out"><img src="icons/zoomout.png"></button>
+                <button onclick="tq.info()" title="info"><img src="icons/info.png"></button>
+            </div>
+        </div>
+        <div id="info" class="hidden">
+            <div id="infoframe">
+                <h3>Purpose</h3>
+                <p>Schedule simple tasks and track time.</p>
+                <h3>Add</h3>
+                <p>To add a frame press '+' or click the add button <img src="icons/new.png">. Type a caption and confirm. If there is a selected frame on the timeline the new one will be scheduled to start after the selected frame's end, otherwise the blue
+                    vertical line will mark the start. </p>
+                <h3>Move around and resize</h3>
+                <p>All active frames could be dragged and stretched when they are on the right side of the red line. Once a fame is moved in the past, only the edit and delete operations are possible. </p>
+                <h3>Cut</h3>
+                <p>You can cut <img src="icons/cut.png"> active frames only, i.e. when the red line (now) splits the frame. The cut will make an inactive (past) frame and will erase the remainder.</p>
+                <h3>Edit</h3>
+                <p>Select a time-frame (inactive included) and click the edit button <img src="icons/edit.png">, click save if you want to keep it. </p>
+                <h3>Storage</h3>
+                <p>Everything is kept in the local storage of the current browser. There is no server communication whatsoever and you cannot sync timeframes from different devices.
+                </p>
+                <p>When saving <img src="icons/save.png"> all time-frames are bundled as a single item and stored in the local storage under 'all-time-frames' key. To clear everything click the delete button <img src="icons/delete.png"></p>
+                <p>If you remove individual time-frames with the floating <i>x</i> button, save to update the storage.</p>
+                <h3>Notification</h3>
+                <p>On dektop browsers both the start and the end of a frame are signaled with a browser notification, if you grant the permission. </p>
+                <p>On mobile devices the default notification is triggered if the application is added to the home screen (installed as a progressive app) if not the desktop broswer behavior applies. </p>
+                <p><b>Note:</b> The mobile browsers may not keep the background ticker alive for long after you move away from the page. It's device/browser specific. In the worst case you'll get the notifications when you check it.</p>
+
+            </div>
+        </div>
+        <div id="dateTimePickers" class="hidden">
+            <div id="dateTimePickersInner">
+                <div class="dtpickrow">
+                    <span>Start date:</span>
+                    <input type="date" name="startDatePicker" id="startDatePicker" /><br>
+                    <span>Start time:</span>
+                    <input type="time" name="startTimePicker" id="startTimePicker" />
+                </div>
+                <div class="dtpickrow">
+                    <span>End date:</span>
+                    <input type="date" name="endDatePicker" id="endDatePicker" /><br>
+                    <span>End time:</span>
+                    <input type="time" name="endTimePicker" id="endTimePicker" />
+                </div>
+                <button id='lockbtn' class="btn" onclick="tq.lockframe()" title="prevent resize and drag">lock</button>
+                <button class="btn" onclick="tq.update_dates()">update</button>
             </div>
         </div>
         <div id="visualization"></div>
-        <div id="selecttoolbar" class="hidden">
-            <button onclick="prompt()" title="edit"><img src="icons/edit.png"></button>
-        </div>
     </div>
     <div id="sound"></div>
+
+
+
 </body>
 
 </html>
