@@ -90,3 +90,7 @@ body {
 .b-fail {
     background: linear-gradient(#ffffff, #d15151) !important;
 }
+
+.hidden {
+    display: none !important;
+}

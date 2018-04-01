@@ -55,17 +55,19 @@
                 <button onclick="tq.add()" title="add"><img src="icons/new.png"></button>
                 <button onclick="tq.save_to_ls(this)" title="save"><img src="icons/save.png"></button>
                 <button onclick="tq.clear_ls(this)" title="clear"><img src="icons/delete.png"></button>
-                <button onclick="tq.gotonow()" title="now"><img src="icons/now.png"></button>
+                <button onclick="tq.cutframe()" title="cut"><img src="icons/cut.png"></button>
+                <button onclick="tq.editframe()" title="edit"><img src="icons/edit.png"></button>
                 <button onclick="tq.track(this)" title="track"><img src="icons/track.png"></button>
                 <button onclick="tq.zoomin()" title="zoom in"><img src="icons/zoomin.png"></button>
                 <button onclick="tq.zoomout()" title="zoom out"><img src="icons/zoomout.png"></button>
             </div>
         </div>
         <div id="visualization"></div>
+        <div id="selecttoolbar" class="hidden">
+            <button onclick="prompt()" title="edit"><img src="icons/edit.png"></button>
+        </div>
     </div>
     <div id="sound"></div>
 </body>
-
-
 
 </html>

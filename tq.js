@@ -91,7 +91,7 @@ function run() {
         if (name) {
             let endTime = new Date(startTime).setMinutes(startTime.getMinutes() + defMin)
             if (endTime > max_date) max_date = new Date(endTime)
-            let c = `<div id="tfh-${tIdGen}"><b>${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
+            let c = `<div id="tfh-${tIdGen}"><b class="tf-text" >${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
             let tframe = {
                 id: tIdGen,
                 name: name,
@@ -134,6 +134,7 @@ function run() {
             if (confirm('Delete all frames from the local storage?')) {
                 localStorage.setItem(LS_KEY, '')
                 items.clear()
+                max_date = new Date()
                 if (btn) btn.classList.add('b-ok')
             }
         } catch (ex) {
@@ -225,17 +226,53 @@ function run() {
 
     let timeline = new vis.Timeline(container, items, options)
 
-    // when move around
-    // timeline.on('rangechanged', function(props) {
-    //     markdead()
-    // });
+    // editframe and cutframe depend on the currently selected item 
+    let selProps = null
 
-    // timeline.on('select', function(d) {
-    //     console.log(d);
-    // });
+    timeline.on('select', function(d) {
+        console.log(d);
+        selProps = d
+    });
+
+    function editframe() {
+        if (selProps.items && selProps.items.length > 0) {
+            let t = document.getElementById(`tfh-${selProps.items[0]}`)
+            if (t) {
+                let b = t.querySelectorAll(`.tf-text`)
+                if (b.length > 0) {
+                    let text = prompt('Edit text', b[0].innerHTML)
+                    b[0].innerHTML = text
+                    items.update({ id: selProps.items[0], content: t.outerHTML })
+                }
+            }
+        }
+    }
+
+
+    function cutframe() {
+        if (selProps.items && selProps.items.length > 0) {
+            let t = document.getElementById(`tfh-${selProps.items[0]}`)
+            let frame = items.get(selProps.items[0])
+            if (t && frame) {
+                let s = new Date(frame.start)
+                let e = new Date(frame.end)
+                let n = new Date()
+                if (s < n && n < e) {
+                    let b = t.querySelectorAll(`.tf-text`)
+                    if (b.length > 0 && confirm(`Cut ${b[0].innerText}?`)) {
+                        let tf = t.querySelectorAll(`[id='tf-${frame.id}']`) // the span with the time
+                        if (tf.length > 0) {
+                            let diff = datediff(frame)
+                            tf[0].innerText = `${diff.h}h:${diff.m}m`
+                        }
+                        items.update({ id: selProps.items[0], end: n, content: t.outerHTML })
+                    }
+                }
+            }
+        }
+    }
 
     gotonow()
-
 
     // there is no real use of the web worker, 
     // all browsers will kill the ticker when 
@@ -296,6 +333,7 @@ function run() {
         if (e && e.key == '+') add()
     });
 
+
     return {
         add,
         gotonow,
@@ -307,6 +345,8 @@ function run() {
         load_from_ls,
         clear_ls,
         zoomin: function() { timeline.zoomIn(1) },
-        zoomout: function() { timeline.zoomOut(1) }
+        zoomout: function() { timeline.zoomOut(1) },
+        editframe,
+        cutframe
     }
 }
