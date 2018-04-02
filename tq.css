@@ -86,6 +86,19 @@ body {
     border-color: rgb(70, 70, 70);
 }
 
+.vis-item.active {
+    background-color: rgba(252, 74, 74, 0.377);
+    border-color: rgba(167, 44, 44, 0.473);
+    /* 
+    background-color: rgb(111, 150, 255);
+    border-color: rgb(72, 106, 199); */
+}
+
+.vis-item.past {
+    background-color: rgba(51, 85, 179, 0.493);
+    border-color: rgba(33, 57, 124, 0.493);
+}
+
 .b-ok {
     background: linear-gradient(#ffffff, #70dd61) !important;
 }

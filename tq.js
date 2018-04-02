@@ -106,7 +106,7 @@ function run() {
     }
 
     function add() {
-        tIdGen = getTimeFrameId()
+        let tIdGen = getTimeFrameId()
         let now = new Date()
         let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n select a frame to append `)
         let defMin = 60
@@ -134,6 +134,31 @@ function run() {
                 isendnotified: 0,
                 isstartnotified: 0
                     // type: 'range'
+            }
+            items.add(tframe)
+        }
+    }
+
+    function create() {
+        let name = prompt('Frame label:')
+        let tIdGen = getTimeFrameId()
+        let dates = getDatesFromInputs()
+        if (!dates || isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
+            ntf('The dates are incorrect.', 'ntf-fail')
+            return
+        }
+        if (name) {
+            let dd = datediff({ start: dates[0], end: dates[1] })
+            let initlabel = `${dd.h}h:${dd.m}m`
+            let c = `<div id="tfh-${tIdGen}"><b class="tf-text" >${name}</b><span id="tf-${tIdGen}" class="time-frame">${initlabel}</span></div>`
+            let tframe = {
+                id: tIdGen,
+                name: name,
+                content: c,
+                start: dates[0],
+                end: dates[1],
+                isendnotified: 0,
+                isstartnotified: 0
             }
             items.add(tframe)
         }
@@ -223,7 +248,7 @@ function run() {
         zoomMin: 1000 * 20,
         zoomMax: 1000 * 60 * 60 * 24 * 31 * 2, // 2 months in milliseconds
         height: '350px',
-        // margin: { axis: 25, item: { vertical: 8, horizontal: -0.5 } },
+        margin: { axis: 30, item: { vertical: 4, horizontal: -0.5 } },
         multiselect: true,
         editable: {
             add: false,
@@ -250,11 +275,11 @@ function run() {
             if (tf) {
                 let diff = datediff(item)
                 tf.innerText = `${diff.h}h:${diff.m}m`
-                callback(item)
                 let s = new Date(item.start)
                 let e = new Date(item.end)
                 setDateToInputs(startDatePicker, startTimePicker, s)
                 setDateToInputs(endDatePicker, endTimePicker, e)
+                callback(item)
             } else callback(null)
         },
         onMove: function(item, callback) {
@@ -406,18 +431,14 @@ function run() {
                 let xend = new Date(x.end).valueOf()
                 if (xend < now) {
                     if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 1)
-                    items.update({ id: x.id, isendnotified: 1, editable: { updateTime: false, updateGroup: false, remove: true } })
-                    let e = document.getElementById(`tfh-${x.id}`)
-                    if (e && e.parentElement) {
-                        e.parentElement.classList.add('time-frame-done')
-                    }
+                    items.update({ id: x.id, isendnotified: 1, className: 'past', editable: { updateTime: false, updateGroup: false, remove: true } })
                     save_to_ls()
                 } else {
                     if (now > xstart && now < xend && x.isstartnotified < 1) {
                         if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 0)
-                        items.update({ id: x.id, isstartnotified: 1 })
+                        items.update({ id: x.id, isstartnotified: 1, className: 'active' })
                         save_to_ls()
-                    }
+                    } else if (xstart > now) items.update({ id: x.id, isstartnotified: 0, className: '' })
                 }
             } else if (Date.now() - x.end > hideAfterMs) {
                 items.remove(x.id)
@@ -491,6 +512,7 @@ function run() {
     }
 
     return {
+        create,
         add,
         toggle_set_dates,
         update_dates,
