@@ -28,6 +28,7 @@ function run() {
     const EMD_SOUND = document.getElementById('aud_start')
     const START_SOUND = document.getElementById('aud_end')
     const LS_KEY = 'all-time-frames'
+    const SKIP_NOTIF_IF_OLDER_THAN_MS = 1000 * 60 * 10 //10 min
     let draggedtime = null
     let lockbtn = document.getElementById('lockbtn')
 
@@ -205,11 +206,16 @@ function run() {
     var items = new vis.DataSet([]);
 
     let saved = load_from_ls()
-    if (saved && saved.length > 0)
+    if (saved && saved.length > 0) {
         for (let si of saved) {
             let tf = JSON.parse(si)
-            if (tf) items.add(tf)
+            if (tf) {
+                if (tf.start) tf.start = new Date(tf.start)
+                if (tf.end) tf.end = new Date(tf.end)
+                items.add(tf)
+            }
         }
+    }
 
     var options = {
         start: new Date(now).setDate(now.getHours() - 2),
@@ -224,7 +230,6 @@ function run() {
             updateTime: true,
             updateGroup: true,
             remove: true,
-            updateTime: true
         },
         showCurrentTime: true,
         onAdd: function(item, callback) {
@@ -396,8 +401,11 @@ function run() {
     function tick() {
         for (let x of tq.items.get()) {
             if (x.isendnotified < 1) {
-                if (x.end < Date.now()) {
-                    notify(x.name, 1)
+                let now = Date.now()
+                let xstart = new Date(x.start).valueOf()
+                let xend = new Date(x.end).valueOf()
+                if (xend < now) {
+                    if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 1)
                     items.update({ id: x.id, isendnotified: 1, editable: { updateTime: false, updateGroup: false, remove: true } })
                     let e = document.getElementById(`tfh-${x.id}`)
                     if (e && e.parentElement) {
@@ -405,9 +413,8 @@ function run() {
                     }
                     save_to_ls()
                 } else {
-                    let now = Date.now()
-                    if (now > x.start && now < x.end && x.isstartnotified < 1) {
-                        notify(x.name, 0)
+                    if (now > xstart && now < xend && x.isstartnotified < 1) {
+                        if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 0)
                         items.update({ id: x.id, isstartnotified: 1 })
                         save_to_ls()
                     }
