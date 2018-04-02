@@ -7,25 +7,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/tfq/sw.js').then(function(registration) {
             swreg = registration
+            tq.debug_ntf('sw reg')
             console.log('Service worker registration succeeded:', registration);
         }).catch(function(error) {
+            tq.debug_ntf('sw reg fail')
             console.log('Service worker registration failed:', error);
         });
     } else {
+        tq.debug_ntf('no sw')
         console.log('Service workers are not supported.');
     }
 });
 
 function run() {
+    let TRACE = (window.location.search.length > 3 && window.location.search.substring(0, 4) == '?err')
     let web_worker = null
     let centerNow = 0
     let hideAfterMs = 1000 * 60 * 60 * 24 * 365 // 1 year
     let selProps = null // editframe and cutframe depend on the currently selected item 
-    const EMD_SOUND = 'audio/1'
-    const START_SOUND = 'audio/2'
+    const EMD_SOUND = document.getElementById('aud_start')
+    const START_SOUND = document.getElementById('aud_end')
     const LS_KEY = 'all-time-frames'
     let draggedtime = null
-    let lockbtn = document.getElementById('lockbtn');
+    let lockbtn = document.getElementById('lockbtn')
 
     // returns either the selected frame or draggedtime or NOW + 1 min
     function get_append_date() {
@@ -45,7 +49,9 @@ function run() {
         return new Date().getTime()
     }
 
-    function gotonow() { timeline.moveTo(new Date()) }
+    function gotonow() {
+        timeline.moveTo(new Date())
+    }
 
     function gotolast() {
         let n = new Date()
@@ -57,8 +63,8 @@ function run() {
         }
 
         timeline.moveTo(n)
+        timeline.setCustomTime(n)
     }
-
 
     function notify(text, isEnd = 1) {
         try {
@@ -72,29 +78,30 @@ function run() {
                 body: text,
                 icon: 'timer.png',
                 badge: 'icons/new.png'
-                    // silent: true,
-                    // sound: sound // not supported yet
             }
 
             let granted = () => {
-                if (swreg) swreg.showNotification(title, ntfArgs)
-                else new Notification(title, ntfArgs)
-                playSound(sound)
+                try {
+                    if (swreg) {
+                        debug_ntf('swreg.showNotification')
+                        swreg.showNotification(title, ntfArgs)
+                    } else {
+                        debug_ntf('new Notification')
+                        new Notification(title, ntfArgs)
+                    }
+                    if (sound) sound.play()
+                } catch (ex) { debug_ntf('ex in granted: ' + ex) }
             }
 
-            if (!("Notification" in window)) alert("This browser does not support system notifications")
-            else if (Notification.permission === "granted") granted()
-            else if (Notification.permission !== 'denied') {
-                Notification.requestPermission().then(function(result) {
-                    if (result === "granted") granted()
-                });
+            if ("Notification" in window) {
+                if (Notification.permission === "granted") granted()
+                else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(function(result) {
+                        if (result === "granted") granted()
+                    })
+                }
             }
         } catch (ex) {}
-    }
-
-    function playSound(fn) {
-        document.getElementById("sound").innerHTML =
-            '<audio autoplay="autoplay"><source src="' + fn + '.mp3" type="audio/mpeg" /><embed hidden="true" autostart="true" loop="false" src="' + fn + '.mp3" /></audio>';
     }
 
     function add() {
@@ -264,7 +271,7 @@ function run() {
     let endTimePicker = document.getElementById('endTimePicker')
 
     timeline.on('select', function(d) {
-        console.log(d);
+        if (TRACE) console.log(d);
         selProps = d
         if (d && d.items && d.items.length > 0) {
             let frame = items.get(selProps.items[0])
@@ -459,14 +466,20 @@ function run() {
 
     let ntfdiv = document.getElementById('ntf')
 
+    function debug_ntf(text, css = 'ntf-debug', dur = 30000) {
+        if (TRACE) {
+            ntf(text, css, dur)
+        }
+    }
+
     function ntf(text, css, dur = 1000) {
-        ntfdiv.innerText = text
-        ntfdiv.classList.remove('hidden')
-        ntfdiv.classList.add(css)
+        let newntf = document.createElement('div')
+        newntf.innerHTML = text
+        newntf.classList.add(css)
+        newntf.classList.add('newntf')
+        ntfdiv.appendChild(newntf)
         setTimeout(function() {
-            ntfdiv.classList.add('hidden')
-            ntfdiv.classList.remove(css)
-            ntfdiv.innerText = ''
+            ntfdiv.removeChild(newntf)
         }, dur)
     }
 
@@ -488,6 +501,8 @@ function run() {
         editframe,
         cutframe,
         lockframe,
-        info
+        info,
+        ntf,
+        debug_ntf
     }
 }

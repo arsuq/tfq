@@ -136,17 +136,29 @@ body {
     font-size: 1em;
     width: 100%;
     margin: 0;
-    padding-top: 0.2em;
     padding-bottom: 0.2em;
     top: 0;
+    left: 0;
 }
 
 .ntf-ok {
-    background-color: rgba(62, 223, 48, 0.38);
-    border-bottom: 1px solid #00be00
+    background-color: rgb(151, 250, 142);
+    border-bottom: 1px solid #008800
 }
 
 .ntf-fail {
-    background-color: rgba(255, 0, 0, 0.21);
-    border-bottom: 1px solid #db5b5ba1;
+    color: white;
+    background-color: rgb(212, 81, 81);
+    border-bottom: 1px solid #af3e3ea1;
+}
+
+.ntf-debug {
+    color: white;
+    background-color: #008871;
+    border-bottom: 1px solid #005c4d
+}
+
+.newntf {
+    margin: 0;
+    padding: 0.1em;
 }
