@@ -19,12 +19,11 @@
             background-color: #8bf08b91;
             font-size: 16px;
         }
-        
-        div.vis-readonly,
-        div.vis-readonly.vis-selected {
-            background-color: rgba(226, 226, 226, 0.534) !important;
-            border: 1px solid rgba(161, 161, 161, 0.534) !important;
-        }
+        /* .vis-readonly,
+        .vis-readonly.vis-selected {
+            background-color: rgba(226, 226, 226, 0.534);
+            border: 1px solid rgba(161, 161, 161, 0.534);
+        } */
         
         .vis-item,
         .vis-item.vis-line {
@@ -113,6 +112,8 @@
                 <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
                 <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
                 <button class="btn" onclick="tq.hide_19_8()" title="Hides the 19:00 - 08:00 hours">19-08</button>
+                <button id="authorize-button" class="btn" title="Get events from your google calendar">from google</button>
+                <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">signout</button>
             </div>
         </div>
         <div id="visualization"></div>

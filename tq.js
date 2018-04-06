@@ -1,5 +1,6 @@
 var tq = null
 var swreg = null
+var gcal = null
 
 document.addEventListener('DOMContentLoaded', function() {
     tq = run()
@@ -29,6 +30,7 @@ function run() {
     const START_SOUND = document.getElementById('aud_end')
     const LS_KEY = 'all-time-frames'
     const SKIP_NOTIF_IF_OLDER_THAN_MS = 1000 * 60 * 10 //10 min
+    const NOTIFICATION_CLOSE_AFTER = 6000 // 6sec
     let draggedtime = null
     let lockbtn = document.getElementById('lockbtn')
 
@@ -88,7 +90,8 @@ function run() {
                         swreg.showNotification(title, ntfArgs)
                     } else {
                         debug_ntf('new Notification')
-                        new Notification(title, ntfArgs)
+                        let n = new Notification(title, ntfArgs)
+                        setTimeout(() => { n.close() }, NOTIFICATION_CLOSE_AFTER);
                     }
                     if (sound) sound.play()
                 } catch (ex) { debug_ntf('ex in granted: ' + ex) }
@@ -139,10 +142,10 @@ function run() {
         }
     }
 
-    function create() {
-        let name = prompt('Frame label:')
+    function create(name, dates, props) {
+        if (!name) name = prompt('Frame label:')
         let tIdGen = getTimeFrameId()
-        let dates = getDatesFromInputs()
+        if (!dates) dates = getDatesFromInputs()
         if (!dates || isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
             ntf('The dates are incorrect.', 'ntf-fail')
             return
@@ -160,6 +163,9 @@ function run() {
                 isendnotified: 0,
                 isstartnotified: 0
             }
+            if (props)
+                for (key of Object.keys(props))
+                    tframe[key] = props[key]
             items.add(tframe)
         }
     }
@@ -168,7 +174,9 @@ function run() {
         try {
             let All = []
             for (let i of items.get())
-                All.push(JSON.stringify(i))
+                if (!i.imported || i.imported < 1)
+                    All.push(JSON.stringify(i))
+
             localStorage.setItem(LS_KEY, JSON.stringify(All))
             if (btn) btn.classList.add('b-ok')
             ntf('saved', 'ntf-ok')
@@ -322,7 +330,6 @@ function run() {
 
     create_timeline();
 
-
     setDateToInputs(startDatePicker, startTimePicker, new Date())
     setDateToInputs(endDatePicker, endTimePicker, new Date())
 
@@ -442,14 +449,20 @@ function run() {
                 let xend = new Date(x.end).valueOf()
                 if (xend < now) {
                     if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 1)
-                    items.update({ id: x.id, isendnotified: 1, className: 'past', editable: { updateTime: false, updateGroup: false, remove: true } })
+                    items.update({ id: x.id, isendnotified: 1, className: 'past locked', editable: { updateTime: false, updateGroup: false, remove: true } })
                     save_to_ls()
                 } else {
                     if (now > xstart && now < xend && x.isstartnotified < 1) {
                         if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 0)
-                        items.update({ id: x.id, isstartnotified: 1, className: 'active' })
+                        let css = !x.imported || x.imported < 1 ? 'active' : 'imported'
+                        if (x.editable && x.editable.updateTime === false) css += ' locked'
+                        items.update({ id: x.id, isstartnotified: 1, className: css })
                         save_to_ls()
-                    } else if (xstart > now) items.update({ id: x.id, isstartnotified: 0, className: '' })
+                    } else if (xstart > now) {
+                        let css = !x.imported || x.imported < 1 ? '' : 'imported'
+                        if (x.editable && x.editable.updateTime === false) css += ' locked'
+                        items.update({ id: x.id, isstartnotified: 0, className: css })
+                    }
                 }
             } else if (Date.now() - x.end > hideAfterMs) {
                 items.remove(x.id)
@@ -487,19 +500,34 @@ function run() {
         i.classList.toggle('hidden')
     }
 
-
     function lockframe() {
         if (selProps && selProps.items && selProps.items.length > 0) {
             let frame = items.get(selProps.items[0])
             if (frame) {
-                if (frame.editable && frame.editable.updateTime != null)
+                if (frame.imported) {
+                    ntf('Cannot modify imported frames', 'ntf-fail', 4000)
+                    return
+                }
+                if (frame.editable && frame.editable.updateTime != null) {
                     frame.editable.updateTime = !frame.editable.updateTime
-                else frame.editable = { updateTime: false, remove: true }
+                    togglecss(frame, 'locked', frame.editable.updateTime ? 0 : 1)
+                } else {
+                    frame.editable = { updateTime: false, remove: true }
+                    togglecss(frame, 'locked', 1)
+                }
                 items.update(frame)
                 updatelockbtn(frame)
                     // let text = frame.editable.updateTime === true ? 'unlocked' : 'locked'
                     // ntf('frame ' + text, 'ntf-ok')
             }
+        }
+    }
+
+    function togglecss(item, css, add = 1) {
+        if (item) {
+            if (add > 0) {
+                if (item.className.indexOf(css) < 0) item.className += ' ' + css
+            } else item.className = item.className.replace(css, '')
         }
     }
 
@@ -517,6 +545,7 @@ function run() {
         newntf.classList.add(css)
         newntf.classList.add('newntf')
         ntfdiv.appendChild(newntf)
+        newntf.onclick = () => { newntf.remove() }
         setTimeout(function() {
             ntfdiv.removeChild(newntf)
         }, dur)
@@ -553,6 +582,8 @@ function run() {
         hide_time([s, e])
     }
 
+    gcal = new gooc()
+
     return {
         create,
         add,
@@ -578,5 +609,109 @@ function run() {
         hide_time,
         hide_07,
         hide_19_8
+    }
+}
+
+function gooc() {
+    function registerjs() {
+        let scr = document.getElementById('goog')
+        if (!scr) {
+            src = document.createElement('script')
+            src.id = 'goog'
+            src.onload = function() {
+                if (gcal) gcal.handleClientLoad()
+            }
+        }
+        src.setAttribute('defer', '')
+        src.setAttribute('src', 'https://apis.google.com/js/api.js')
+        document.head.appendChild(src)
+    }
+
+
+    registerjs()
+
+    var CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
+    var API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
+    var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+    var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+
+    var authorizeButton = document.getElementById('authorize-button');
+    var signoutButton = document.getElementById('signout-button');
+
+    function handleClientLoad() {
+        tq.debug_ntf('goog loaded')
+        gapi.load('client:auth2', initClient);
+    }
+
+    function initClient() {
+        gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: DISCOVERY_DOCS,
+            scope: SCOPES
+        }).then(function() {
+            authorizeButton.onclick = () => gapi.auth2.getAuthInstance().signIn().then(() => {
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
+            })
+            signoutButton.onclick = () => {
+                let auth2 = gapi.auth2.getAuthInstance();
+                auth2.signOut().then(() => {
+                    auth2.disconnect()
+                    let isin = gapi.auth2.getAuthInstance().isSignedIn.get()
+                    console.log("in:" + isin)
+                    updateSigninStatus(false) // because of auth2.disconnect()
+                    tq.ntf('Calendar read permissions revoked', 'ntf-ok')
+                })
+            }
+        });
+    }
+
+    function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+            authorizeButton.classList.add('hidden')
+            signoutButton.classList.remove('hidden')
+            listUpcomingEvents();
+        } else {
+            authorizeButton.classList.remove('hidden')
+            signoutButton.classList.add('hidden')
+        }
+    }
+
+    function listUpcomingEvents(maxResults = 100) {
+        gapi.client.calendar.events.list({
+            'calendarId': 'primary',
+            'timeMin': (new Date()).toISOString(),
+            'showDeleted': false,
+            'singleEvents': true,
+            'maxResults': maxResults,
+            'orderBy': 'startTime'
+        }).then(function(response) {
+            let E = response.result.items;
+            if (E.length > 0) {
+                // remove all imported items before adding from google
+                // because the id's will be different
+                for (let gi of tq.items.get())
+                    if (gi.imported)
+                        tq.items.remove(gi.id)
+                for (let i of E) {
+                    if (i.start && i.start.dateTime && i.end && i.end.dateTime) {
+                        let dates = [new Date(i.start.dateTime), new Date(i.end.dateTime)]
+                        let props = {
+                            className: 'imported',
+                            editable: { updateTime: false, remove: false },
+                            imported: 1 //prevent saving
+                        }
+                        tq.create(i.summary, dates, props)
+                    }
+                }
+            } else tq.ntf('No upcoming events found.', 'ntf-ok', 2000)
+        });
+    }
+
+    return {
+        handleClientLoad,
+        initClient,
+        updateSigninStatus,
+        listUpcomingEvents
     }
 }

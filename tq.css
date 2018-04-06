@@ -94,9 +94,26 @@ body {
     border-color: rgb(72, 106, 199); */
 }
 
+.vis-item.imported {
+    background-color: rgba(122, 67, 255, 0.459);
+    border-color: rgba(65, 33, 139, 0.459);
+}
+
 .vis-item.past {
-    background-color: rgba(51, 85, 179, 0.493);
-    border-color: rgba(33, 57, 124, 0.493);
+    background-color: rgba(201, 208, 230, 0.493);
+    border-color: rgba(120, 128, 153, 0.493);
+}
+
+.vis-item.locked {
+    border: 1px dashed rgba(0, 0, 0, 0.63) !important;
+}
+
+.vis-selected.vis-item.locked:before {
+    content: url(icons/small-lock.png);
+    position: absolute;
+    opacity: 0.6;
+    right: 0;
+    top: -18px;
 }
 
 .b-ok {
