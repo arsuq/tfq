@@ -226,7 +226,11 @@ function run() {
         return r
     }
 
-    var container = document.getElementById('visualization');
+    let startDatePicker = document.getElementById('startDatePicker')
+    let endDatePicker = document.getElementById('endDatePicker')
+    let startTimePicker = document.getElementById('startTimePicker')
+    let endTimePicker = document.getElementById('endTimePicker')
+    let container = document.getElementById('visualization');
     let now = new Date()
     var items = new vis.DataSet([]);
 
@@ -287,33 +291,40 @@ function run() {
         }
     };
 
-    let timeline = new vis.Timeline(container, items, options)
+    let timeline = null;
 
-    timeline.addCustomTime(new Date())
+    function create_timeline() {
+        container.innerHTML = ''
+        timeline = new vis.Timeline(container, items, options)
 
-    timeline.on('timechange', function(event) {
-        draggedtime = new Date(event.time)
-    });
+        timeline.addCustomTime(new Date())
 
-    let startDatePicker = document.getElementById('startDatePicker')
-    let endDatePicker = document.getElementById('endDatePicker')
-    let startTimePicker = document.getElementById('startTimePicker')
-    let endTimePicker = document.getElementById('endTimePicker')
+        timeline.on('timechange', function(event) {
+            draggedtime = new Date(event.time)
+        });
 
-    timeline.on('select', function(d) {
-        if (TRACE) console.log(d);
-        selProps = d
-        if (d && d.items && d.items.length > 0) {
-            let frame = items.get(selProps.items[0])
-            if (frame) {
-                let s = new Date(frame.start)
-                let e = new Date(frame.end)
-                setDateToInputs(startDatePicker, startTimePicker, s)
-                setDateToInputs(endDatePicker, endTimePicker, e)
-                updatelockbtn(frame)
+        timeline.on('select', function(d) {
+            if (TRACE) console.log(d);
+            selProps = d
+            if (d && d.items && d.items.length > 0) {
+                let frame = items.get(selProps.items[0])
+                if (frame) {
+                    let s = new Date(frame.start)
+                    let e = new Date(frame.end)
+                    setDateToInputs(startDatePicker, startTimePicker, s)
+                    setDateToInputs(endDatePicker, endTimePicker, e)
+                    updatelockbtn(frame)
+                }
             }
-        }
-    });
+        });
+
+    }
+
+    create_timeline();
+
+
+    setDateToInputs(startDatePicker, startTimePicker, new Date())
+    setDateToInputs(endDatePicker, endTimePicker, new Date())
 
     function updatelockbtn(frame) {
         if (frame) {
@@ -511,6 +522,37 @@ function run() {
         }, dur)
     }
 
+    function hide_time(dates) {
+        if (!dates) dates = getDatesFromInputs()
+        if (dates && dates.length > 1) {
+            if (isNaN(dates[0]) || isNaN(dates[1])) { ntf('Invalid dates.', 'ntf-fail'); return }
+            options.hiddenDates = [{
+                start: dates[0],
+                end: dates[1],
+                repeat: 'daily'
+            }]
+            create_timeline()
+            gotonow()
+        }
+    }
+
+    function hide_07() {
+        let n = new Date()
+        let e = new Date()
+        n.setHours(0, 0, 0, 0)
+        e.setHours(7, 0, 0, 0)
+        hide_time([n, e])
+    }
+
+    function hide_19_8() {
+        let s = new Date()
+        let e = new Date()
+        s.setHours(19, 0, 0, 0)
+        e.setDate(e.getDate() + 1)
+        e.setHours(8, 0, 0, 0)
+        hide_time([s, e])
+    }
+
     return {
         create,
         add,
@@ -532,6 +574,9 @@ function run() {
         lockframe,
         info,
         ntf,
-        debug_ntf
+        debug_ntf,
+        hide_time,
+        hide_07,
+        hide_19_8
     }
 }

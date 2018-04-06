@@ -69,7 +69,7 @@
         <div id="info" class="hidden">
             <div id="infoframe">
                 <h3>Purpose</h3>
-                <p>Schedule simple tasks and track time.</p>
+                <p>See how you waste your time.</p>
                 <h3>Add</h3>
                 <p>To add a frame press '+' or click the add button <img src="icons/new.png">. Type a caption and confirm. If there is a selected frame on the timeline the new one will be scheduled to start after the selected frame's end, otherwise the blue
                     vertical line will mark the start. </p>
@@ -86,8 +86,8 @@
                 <p>If you remove individual time-frames with the floating <i>x</i> button, save to update the storage.</p>
                 <h3>Notification</h3>
                 <p>On dektop browsers both the start and the end of a frame are signaled with a browser notification, if you grant the permission. </p>
-                <p>On mobile devices the default notification is triggered if the application is added to the home screen (installed as a progressive app) if not the desktop broswer behavior applies. </p>
-                <p><b>Note:</b> The mobile browsers may not keep the background ticker alive for long after you move away from the page. It's device/browser specific. In the worst case you'll get the notifications when you check it.</p>
+                <p>On mobile devices the default notification is triggered.</p>
+                <p><b>Note:</b> The mobile browsers may not keep the background ticker alive for long after you move away from the page.</p>
                 <h3>Credits</h3>
                 <p><a href="http://visjs.org/" target="_blank">Vis.js</a></p>
 
@@ -110,6 +110,9 @@
                 <button class="btn" onclick="tq.create()">create</button>
                 <button id='lockbtn' class="btn" onclick="tq.lockframe()" title="prevent resize and drag">lock</button>
                 <button class="btn" onclick="tq.update_dates()">update</button>
+                <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
+                <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
+                <button class="btn" onclick="tq.hide_19_8()" title="Hides the 19:00 - 08:00 hours">19-08</button>
             </div>
         </div>
         <div id="visualization"></div>
