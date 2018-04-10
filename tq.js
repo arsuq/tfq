@@ -756,13 +756,19 @@ function gooc() {
                         tq.items.remove(gi.id)
                 for (let i of E) {
                     if (i.start && i.start.dateTime && i.end && i.end.dateTime) {
-                        let dates = [new Date(i.start.dateTime), new Date(i.end.dateTime)]
+                        let sd = new Date(i.start.dateTime)
+                        let ed = new Date(i.end.dateTime)
+                        let dates = [sd, ed]
                         let props = {
                             className: 'imported',
                             editable: { updateTime: false, remove: false },
                             imported: 1 //prevent saving
                         }
-                        tq.create(i.summary, dates, props)
+                        if (ed - sd > 60000) tq.create(i.summary, dates, props)
+                        else {
+                            props.ispoint = 1
+                            tq.create_point(i.summary, sd, props)
+                        }
                     }
                 }
             } else tq.ntf('No upcoming events found.', 'ntf-ok', 2000)
