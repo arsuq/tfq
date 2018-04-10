@@ -62,7 +62,9 @@
                 <button onclick="tq.gotolast()" title="go to last"><img src="icons/last.png"></button>
                 <button onclick="tq.zoomin()" title="zoom in"><img src="icons/zoomin.png"></button>
                 <button onclick="tq.zoomout()" title="zoom out"><img src="icons/zoomout.png"></button>
+                <button onclick="todo.toggle()" title="todo"><img src="icons/todo.png"></button>
                 <button onclick="tq.info()" title="info"><img src="icons/info.png"></button>
+
             </div>
         </div>
         <div id="info" class="hidden">
@@ -92,6 +94,19 @@
                 <h3>Credits</h3>
                 <p><a href="http://visjs.org/" target="_blank">Vis.js</a></p>
 
+            </div>
+        </div>
+        <div id="todowrp" class="hidden">
+            <div><span style="font-size: 1.4em;"><b>Todo list</b></span></div>
+            <div id="todo-toolbar">
+                <button class="btn" onclick="todo.create_item()">add</button>
+                <!-- <button class="btn">track</button> -->
+                <button class="btn" onclick="todo.remove_selected()">remove</button>
+                <button class="btn" onclick="todo.clear()">clear</button>
+                <button class="btn" onclick="todo.loadlist()">load</button>
+                <button class="btn" onclick="todo.savelist()">save</button>
+            </div>
+            <div id="todo-list-host">
             </div>
         </div>
         <div id="dateTimePickers" class="hidden">

@@ -1,10 +1,11 @@
 var tq = null
 var swreg = null
 var gcal = null
+var todo = null
 
 document.addEventListener('DOMContentLoaded', function() {
     tq = run()
-
+    todo = todos()
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/tfq/sw.js').then(function(registration) {
             swreg = registration
@@ -713,5 +714,125 @@ function gooc() {
         initClient,
         updateSigninStatus,
         listUpcomingEvents
+    }
+}
+
+function todos() {
+    const LS_KEY = "all_todo_items"
+    const HOST_WRAPPER_ID = 'todowrp'
+    const HOST_ID = "todo-list-host"
+    const TODO_ITEM = "todo-item"
+    const HEADER_CSS = 'todo-header'
+    const HEADER_TITLE_CSS = 'todo-title'
+    const DESC_CSS = 'todo-desc'
+    const CE = 'contenteditable'
+    const SELECTED_CSS = 'todo-selected'
+    const HOST = document.getElementById(HOST_ID)
+
+    if (HOST)
+        HOST.onkeypress = function(e) {
+            if (e.keyCode == '13') return false
+        }
+
+    function loadlist() {
+        let s = localStorage.getItem(LS_KEY)
+        let L = JSON.parse(s)
+        if (L) {
+            clear()
+            for (let l of L)
+                create_item(l.title, l.desc)
+        }
+    }
+
+    function savelist() {
+        if (HOST) {
+            let L = []
+            let I = HOST.querySelectorAll('.todo-item')
+            if (I.length > 0) {
+                for (let i of I) {
+                    let h = i.querySelectorAll('.' + HEADER_TITLE_CSS)
+                    let d = i.querySelectorAll('.' + DESC_CSS)
+                    let item = { title: '', desc: '' }
+                    if (h.length > 0) item.title = h[0].innerHTML
+                    if (d.length > 0) item.desc = d[0].innerHTML
+                    L.push(item)
+                }
+            }
+
+            let sL = JSON.stringify(L)
+            localStorage.setItem(LS_KEY, sL)
+            tq.ntf('Todo list saved', 'ntf-ok')
+        } else tq.debug_ntf('Todo list is not initialized properly')
+    }
+
+    function create_item(title = 'Title', desc = '') {
+        if (HOST) {
+            let itemdiv = document.createElement('div')
+            let headerdiv = document.createElement('div')
+            let titlediv = document.createElement('div')
+            let descdiv = document.createElement('div')
+            let collapse = document.createElement('button')
+
+            itemdiv.id = new Date().getTime()
+            itemdiv.classList.add(TODO_ITEM)
+            headerdiv.appendChild(titlediv)
+            headerdiv.appendChild(collapse)
+            headerdiv.classList.add(HEADER_CSS)
+            descdiv.classList.add('hidden', DESC_CSS)
+            titlediv.classList.add(HEADER_TITLE_CSS);
+            titlediv.setAttribute(CE, 'true')
+            descdiv.setAttribute(CE, 'true')
+            itemdiv.appendChild(headerdiv)
+            itemdiv.appendChild(descdiv)
+            itemdiv.onclick = function() { itemdiv.classList.toggle(SELECTED_CSS) }
+            collapse.classList.add('todo-collapse', 'todo-collapse-down')
+            collapse.onclick = function() {
+                descdiv.classList.toggle('hidden')
+                if (descdiv.classList.contains('hidden')) {
+                    collapse.classList.add('todo-collapse-down')
+                    collapse.classList.remove('todo-collapse-up')
+                } else {
+                    collapse.classList.remove('todo-collapse-down')
+                    collapse.classList.add('todo-collapse-up')
+                }
+            }
+
+            titlediv.innerHTML = title
+            descdiv.innerHTML = desc
+
+            HOST.appendChild(itemdiv)
+        } else tq.debug_ntf('Todo list is not initialized properly')
+    }
+
+    function toggle() {
+        document.getElementById(HOST_WRAPPER_ID).classList.toggle('hidden')
+    }
+
+    function remove_selected() {
+        if (HOST) {
+            if (confirm("Confirm deleting all selected todo items.")) {
+                let selected = HOST.querySelectorAll('.' + SELECTED_CSS)
+                if (selected.length > 0)
+                    for (let s of selected)
+                        s.remove()
+            }
+        }
+    }
+
+    function clear() {
+        if (HOST) {
+            if (HOST.children.length > 0 && !confirm('Clear?')) return
+            while (HOST.children.length > 0)
+                HOST.removeChild(HOST.firstChild)
+        }
+    }
+
+    return {
+        toggle,
+        loadlist,
+        savelist,
+        create_item,
+        remove_selected,
+        clear
     }
 }
