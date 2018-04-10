@@ -717,7 +717,7 @@ function gooc() {
             signoutButton.onclick = () => {
                 let auth2 = gapi.auth2.getAuthInstance();
                 auth2.signOut().then(() => {
-                    auth2.disconnect()
+                    gapi.auth2.getAuthInstance().disconnect()
                     let isin = gapi.auth2.getAuthInstance().isSignedIn.get()
                     console.log("in:" + isin)
                     updateSigninStatus(false) // because of auth2.disconnect()
