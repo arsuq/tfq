@@ -29,10 +29,11 @@ function run() {
     let selProps = null // editframe and cutframe depend on the currently selected item 
     const EMD_SOUND = document.getElementById('aud_start')
     const START_SOUND = document.getElementById('aud_end')
+    const POINT_SOUND = document.getElementById('aud_point')
     const LS_KEY = 'all-time-frames'
     const SKIP_NOTIF_IF_OLDER_THAN_MS = 1000 * 60 * 10 //10 min
     const NOTIFICATION_CLOSE_AFTER = 6000 // 6sec
-    let draggedtime = null
+    let draggedtime = new Date()
     let lockbtn = document.getElementById('lockbtn')
 
     // returns either the selected frame or draggedtime or NOW + 1 min
@@ -53,6 +54,17 @@ function run() {
         return new Date().getTime()
     }
 
+    function goto_spec_end() {
+        let gotomoment = moment(endDatePicker.value + " " + endTimePicker.value)
+        let gt = gotomoment.toDate()
+        if (gt && !isNaN(gt.getTime())) {
+            draggedtime = gt
+            setDateToInputs(startDatePicker, startTimePicker, gt)
+            timeline.setCustomTime(gt)
+            timeline.moveTo(gt)
+        }
+    }
+
     function gotonow() {
         timeline.moveTo(new Date())
     }
@@ -70,13 +82,21 @@ function run() {
         timeline.setCustomTime(n)
     }
 
-    function notify(text, isEnd = 1) {
+    const SOUND_TYPE = { START: 1, END: 2, POINT: 3 }
+
+    function notify(text, soundtype = 1) {
         try {
-            let sound = EMD_SOUND
-            let title = 'Out of time frame'
-            if (isEnd < 1) {
+            let sound = ''
+            let title = ''
+            if (soundtype == SOUND_TYPE.START) {
                 sound = START_SOUND
                 title = 'In time frame'
+            } else if (soundtype == SOUND_TYPE.END) {
+                sound = EMD_SOUND
+                title = 'Out of time frame'
+            } else if (soundtype == SOUND_TYPE.POINT) {
+                sound = POINT_SOUND
+                title = 'Time point'
             }
             let ntfArgs = {
                 body: text,
@@ -113,6 +133,7 @@ function run() {
         let tIdGen = getTimeFrameId()
         let now = new Date()
         let name = prompt(`Time frame name: \n --mm sets a duration in minutes, default is 60 \n select a frame to append `)
+        if (!name) return
         let defMin = 60
         let hasmin = name.indexOf(' --') // duration in min
 
@@ -145,6 +166,7 @@ function run() {
 
     function create(name, dates, props) {
         if (!name) name = prompt('Frame label:')
+        if (!name) return
         let tIdGen = getTimeFrameId()
         if (!dates) dates = getDatesFromInputs()
         if (!dates || isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
@@ -163,6 +185,36 @@ function run() {
                 end: dates[1],
                 isendnotified: 0,
                 isstartnotified: 0
+            }
+            if (props)
+                for (key of Object.keys(props))
+                    tframe[key] = props[key]
+            items.add(tframe)
+        }
+    }
+
+    function create_point(name, enddate, props) {
+        if (!name) name = prompt('Time point label:')
+        if (!name) return
+        let tIdGen = getTimeFrameId()
+        if (!enddate && draggedtime) enddate = new Date(draggedtime)
+        if (!enddate || isNaN(enddate)) {
+            ntf('The time point date (end date) is incorrect.', 'ntf-fail')
+            return
+        }
+        if (name) {
+            let c = `<div id="tfh-${tIdGen}"><b class="tf-text" >${name}</b></div>`
+            let tframe = {
+                id: tIdGen,
+                name: name,
+                content: c,
+                start: enddate,
+                end: enddate,
+                isendnotified: 0,
+                isstartnotified: 1,
+                editable: { updateTime: true, updateGroup: false, remove: true },
+                type: 'box',
+                ispoint: 1
             }
             if (props)
                 for (key of Object.keys(props))
@@ -284,16 +336,20 @@ function run() {
             }
         },
         onMoving: function(item, callback) {
-            let tf = document.getElementById('tf-' + item.id)
-            if (tf) {
-                let diff = datediff(item)
-                tf.innerText = `${diff.h}h:${diff.m}m`
-                let s = new Date(item.start)
-                let e = new Date(item.end)
-                setDateToInputs(startDatePicker, startTimePicker, s)
-                setDateToInputs(endDatePicker, endTimePicker, e)
+            if (item.ispoint) {
                 callback(item)
-            } else callback(null)
+            } else {
+                let tf = document.getElementById('tf-' + item.id)
+                if (tf) {
+                    let diff = datediff(item)
+                    tf.innerText = `${diff.h}h:${diff.m}m`
+                    let s = new Date(item.start)
+                    let e = new Date(item.end)
+                    setDateToInputs(startDatePicker, startTimePicker, s)
+                    setDateToInputs(endDatePicker, endTimePicker, e)
+                    callback(item)
+                } else callback(null)
+            }
         },
         onMove: function(item, callback) {
             callback(item)
@@ -449,12 +505,13 @@ function run() {
                 let xstart = new Date(x.start).valueOf()
                 let xend = new Date(x.end).valueOf()
                 if (xend < now) {
-                    if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 1)
+                    let stype = x.ispoint ? SOUND_TYPE.POINT : SOUND_TYPE.END
+                    if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, stype)
                     items.update({ id: x.id, isendnotified: 1, className: 'past locked', editable: { updateTime: false, updateGroup: false, remove: true } })
                     save_to_ls()
                 } else {
                     if (now > xstart && now < xend && x.isstartnotified < 1) {
-                        if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, 0)
+                        if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, SOUND_TYPE.START)
                         let css = !x.imported || x.imported < 1 ? 'active' : 'imported'
                         if (x.editable && x.editable.updateTime === false) css += ' locked'
                         items.update({ id: x.id, isstartnotified: 1, className: css })
@@ -587,6 +644,7 @@ function run() {
 
     return {
         create,
+        create_point,
         add,
         toggle_set_dates,
         update_dates,
@@ -609,7 +667,8 @@ function run() {
         debug_ntf,
         hide_time,
         hide_07,
-        hide_19_8
+        hide_19_8,
+        goto_spec_end
     }
 }
 
@@ -631,13 +690,14 @@ function gooc() {
 
     registerjs()
 
-    var CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
-    var API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
-    var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
-    var SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+    // You may exploit my calendar quota :)
+    const CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
+    const API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
+    const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+    const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
 
-    var authorizeButton = document.getElementById('authorize-button');
-    var signoutButton = document.getElementById('signout-button');
+    let authorizeButton = document.getElementById('authorize-button');
+    let signoutButton = document.getElementById('signout-button');
 
     function handleClientLoad() {
         tq.debug_ntf('goog loaded')
@@ -821,7 +881,7 @@ function todos() {
 
     function clear() {
         if (HOST) {
-            if (HOST.children.length > 0 && !confirm('Clear?')) return
+            if (HOST.children.length > 0 && !confirm('Clear the list?')) return
             while (HOST.children.length > 0)
                 HOST.removeChild(HOST.firstChild)
         }

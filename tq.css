@@ -108,7 +108,8 @@ body {
     border: 1px dashed rgba(0, 0, 0, 0.63) !important;
 }
 
-.vis-selected.vis-item.locked:before {
+.vis-selected.vis-range.locked:before,
+.vis-selected.vis-box.locked:before {
     content: url(icons/small-lock.png);
     position: absolute;
     opacity: 0.6;

@@ -52,7 +52,8 @@
         <div id="title"><img src="logo.png" width="250"></div>
         <div id="toolbar">
             <div>
-                <button onclick="tq.add()" title="add"><img src="icons/new.png"></button>
+                <button onclick="tq.add()" title="add range"><img src="icons/new.png"></button>
+                <button onclick="tq.create_point()" title="add point"><img src="icons/now.png"></button>
                 <button onclick="tq.toggle_set_dates()" title="set duration"><img src="icons/len.png"></button>
                 <button onclick="tq.save_to_ls(this)" title="save"><img src="icons/save.png"></button>
                 <button onclick="tq.clear_ls(this)" title="clear"><img src="icons/delete.png"></button>
@@ -129,6 +130,7 @@
                 <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
                 <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
                 <button class="btn" onclick="tq.hide_19_8()" title="Hides the 19:00 - 08:00 hours">19-08</button>
+                <button class="btn" onclick="tq.goto_spec_end()" title="Moves the blue line to the specified end date and time">from end</button>
                 <button id="authorize-button" class="btn" title="Get events from your google calendar">from google</button>
                 <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
             </div>
@@ -139,7 +141,7 @@
     <div class="hidden">
         <audio id="aud_start"><source src="audio/1.mp3" type="audio/mpeg"/> </audio>
         <audio id="aud_end"><source src="audio/2.mp3" type="audio/mpeg"/> </audio>
-        <audio id="aud"><source src="audio/3.mp3" type="audio/mpeg"/> </audio>
+        <audio id="aud_point"><source src="audio/3.mp3" type="audio/mpeg"/> </audio>
     </div>
 </body>
 
