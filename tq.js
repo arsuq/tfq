@@ -49,7 +49,6 @@ function run() {
         } else return draggedtime
     }
 
-
     function getTimeFrameId() {
         return new Date().getTime()
     }
@@ -167,7 +166,7 @@ function run() {
     function create(name, dates, props) {
         if (!name) name = prompt('Frame label:')
         if (!name) return
-        let tIdGen = getTimeFrameId()
+        let tIdGen = props && props.id ? props.id : getTimeFrameId()
         if (!dates) dates = getDatesFromInputs()
         if (!dates || isNaN(dates[0].getTime()) || isNaN(dates[1].getTime())) {
             ntf('The dates are incorrect.', 'ntf-fail')
@@ -196,7 +195,7 @@ function run() {
     function create_point(name, enddate, props) {
         if (!name) name = prompt('Time point label:')
         if (!name) return
-        let tIdGen = getTimeFrameId()
+        let tIdGen = props && props.id ? props.id : getTimeFrameId()
         if (!enddate && draggedtime) enddate = new Date(draggedtime)
         if (!enddate || isNaN(enddate)) {
             ntf('The time point date (end date) is incorrect.', 'ntf-fail')
@@ -268,6 +267,30 @@ function run() {
                     btn.classList.remove('b-fail')
                 }, 800)
         }
+    }
+
+    function validate(frame) {
+        if (!frame.start || !frame.end || !frame.name || !frame.content)
+            return false
+        return true
+    }
+
+    let merged_items = 0
+
+    function merge(frames) {
+        if (frames)
+            for (let f of frames) {
+                f.start = new Date(f.start)
+                f.end = new Date(f.end)
+                if (validate(f))
+                    if (f.id) {
+                        if (items.get(f.id) == null) {
+                            if (f.ispoint > 0) create_point(f.name, f.end, { id: f.id })
+                            else create(f.name, [f.start, f.end], { id: f.id })
+                            merged_items++
+                        }
+                    }
+            }
     }
 
     function clear() {
@@ -508,14 +531,14 @@ function run() {
                     let stype = x.ispoint ? SOUND_TYPE.POINT : SOUND_TYPE.END
                     if (now - xend < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, stype)
                     items.update({ id: x.id, isendnotified: 1, className: 'past locked', editable: { updateTime: false, updateGroup: false, remove: true } })
-                    save_to_ls()
+                    if (merged_items < 1) save_to_ls() // otherwise it will save the whole list for all imported passed items
                 } else {
                     if (now > xstart && now < xend && x.isstartnotified < 1) {
                         if (now - xstart < SKIP_NOTIF_IF_OLDER_THAN_MS) notify(x.name, SOUND_TYPE.START)
                         let css = !x.imported || x.imported < 1 ? 'active' : 'imported'
                         if (x.editable && x.editable.updateTime === false) css += ' locked'
                         items.update({ id: x.id, isstartnotified: 1, className: css })
-                        save_to_ls()
+                        if (merged_items < 1) save_to_ls()
                     } else if (xstart > now) {
                         let css = !x.imported || x.imported < 1 ? '' : 'imported'
                         if (x.editable && x.editable.updateTime === false) css += ' locked'
@@ -526,6 +549,7 @@ function run() {
                 items.remove(x.id)
             }
         }
+        if (merged_items > 0) merged_items = 0
         if (centerNow > 0) gotonow()
     }
 
@@ -640,12 +664,23 @@ function run() {
         hide_time([s, e])
     }
 
+    let tbm = document.getElementById('toolbar-more')
+    let mi = document.getElementById('moreimg')
+
+    function more() {
+        tbm.classList.toggle('hidden')
+        mi.src = tbm.classList.contains('hidden') ?
+            'icons/more.png' : 'icons/morev.png'
+    }
+
     gcal = new gooc()
 
     return {
+        LS_KEY,
         create,
         create_point,
         add,
+        merge,
         toggle_set_dates,
         update_dates,
         gotonow,
@@ -659,6 +694,7 @@ function run() {
         clear_ls,
         zoomin: function() { timeline.zoomIn(1) },
         zoomout: function() { timeline.zoomOut(1) },
+        getDatesFromInputs,
         editframe,
         cutframe,
         lockframe,
@@ -668,7 +704,8 @@ function run() {
         hide_time,
         hide_07,
         hide_19_8,
-        goto_spec_end
+        goto_spec_end,
+        more
     }
 }
 
@@ -806,7 +843,27 @@ function todos() {
         if (L) {
             clear()
             for (let l of L)
-                create_item(l.title, l.desc)
+                create_item(l)
+        }
+    }
+
+    function merge(items) {
+        let s = localStorage.getItem(LS_KEY)
+        let L = JSON.parse(s)
+        if (L) {
+            while (HOST.children.length > 0)
+                HOST.removeChild(HOST.firstChild)
+            let IDs = new Set()
+            for (let l of L) {
+                create_item(l)
+                if (l.id) IDs.add(l.id)
+            }
+            for (let l of items) {
+                if (l.id) {
+                    if (!IDs.has(l.id))
+                        create_item(l)
+                } else create_item(l)
+            }
         }
     }
 
@@ -818,7 +875,7 @@ function todos() {
                 for (let i of I) {
                     let h = i.querySelectorAll('.' + HEADER_TITLE_CSS)
                     let d = i.querySelectorAll('.' + DESC_CSS)
-                    let item = { title: '', desc: '' }
+                    let item = { id: i.id, title: '', desc: '' }
                     if (h.length > 0) item.title = h[0].innerHTML
                     if (d.length > 0) item.desc = d[0].innerHTML
                     L.push(item)
@@ -831,7 +888,7 @@ function todos() {
         } else tq.debug_ntf('Todo list is not initialized properly')
     }
 
-    function create_item(title = 'Title', desc = '') {
+    function create_item(item = { id: null, title: 'Title', desc: '' }) {
         if (HOST) {
             let itemdiv = document.createElement('div')
             let headerdiv = document.createElement('div')
@@ -839,7 +896,8 @@ function todos() {
             let descdiv = document.createElement('div')
             let collapse = document.createElement('button')
 
-            itemdiv.id = new Date().getTime()
+
+            itemdiv.id = item.id ? item.id : new Date().getTime()
             itemdiv.classList.add(TODO_ITEM)
             headerdiv.appendChild(titlediv)
             headerdiv.appendChild(collapse)
@@ -863,8 +921,8 @@ function todos() {
                 }
             }
 
-            titlediv.innerHTML = title
-            descdiv.innerHTML = desc
+            titlediv.innerHTML = item.title
+            descdiv.innerHTML = item.desc
 
             HOST.appendChild(itemdiv)
         } else tq.debug_ntf('Todo list is not initialized properly')
@@ -894,11 +952,104 @@ function todos() {
     }
 
     return {
+        LS_KEY,
         toggle,
         loadlist,
         savelist,
         create_item,
         remove_selected,
-        clear
+        clear,
+        merge
     }
+}
+
+function export_range() {
+    const d = tq.getDatesFromInputs()
+    if (d) {
+        const f = moment(d[0]).format('YYMMDD-HHmm');
+        const t = moment(d[1]).format('YYMMDD-HHmm');
+        export_data(d[0], d[1], `tfq-${f}::${t}.data`)
+    }
+}
+
+function export_data(fromdate, todate, filename = 'tfq.data') {
+    if (tq && todos) {
+        // let frames = localStorage.getItem(tq.LS_KEY)
+        let todolist = localStorage.getItem(todo.LS_KEY)
+        let frames = []
+        if (fromdate && todate) {
+            if (!isNaN(fromdate.getTime()) && !isNaN(fromdate.getTime())) {
+                for (let i of tq.items.get())
+                    if (i.start > fromdate && i.end < todate)
+                        frames.push(i)
+            } else tq.ntf('Export dates are invalid', 'ntf-fail', 4000)
+        } else frames = tq.items.get()
+        let exp = {
+            frames: frames,
+            todo: todolist ? JSON.parse(todolist) : null
+        }
+        let asjson = JSON.stringify(exp)
+        save_to_file(asjson, filename)
+    }
+}
+
+function import_data() {
+    load_file_sync().then((d) => {
+        if (d && tq && todo) {
+            let data = JSON.parse(d)
+            try {
+                if (data.frames) {
+                    tq.merge(data.frames)
+                }
+                if (data.todo) {
+                    todo.merge(data.todo)
+                }
+                tq.ntf('Lists merged', 'ntf-ok')
+            } catch (ex) {
+                tq.ntf('There was an error in the import, see the console')
+                console.log(ex)
+            }
+        }
+    }).catch((x) => {
+        if (tq) tq.ntf('Import failed, see the reason in the console', 'ntf-fail')
+        console.log(x)
+    })
+}
+
+function save_to_file(text, filename, type = 'text/plain') {
+    let a = document.createElement("a")
+    let file = new Blob([text], { type: type })
+    a.href = URL.createObjectURL(file)
+    a.download = filename
+    a.click()
+}
+
+function load_file_sync() {
+    return new Promise(
+        function(resolve, reject) {
+            let upl = document.createElement("input")
+            let state = 0
+            upl.setAttribute('type', 'file')
+            upl.onchange = function() {
+                if (upl.files.length > 0) {
+                    var fr = new FileReader()
+                    fr.onload = function(e) {
+                        state = 1;
+                        resolve(e.target.result)
+                    }
+                    fr.onerror = function(e) {
+                        state = 1;
+                        reject(e)
+                    }
+                    fr.readAsText(upl.files.item(0))
+                } else reject(e)
+            }
+            setTimeout(() => {
+                // in case you cancel the file open dialog
+                // it doesn't fire a browser notification
+                if (state < 1)
+                    reject('timeout')
+            }, 30000)
+            upl.click()
+        })
 }
