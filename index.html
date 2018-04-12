@@ -68,9 +68,11 @@
                 <button onclick="tq.info()" title="info"><img src="icons/info.png"></button>
             </div>
             <div id="toolbar-more" class="hidden">
-                <button onclick="export_data()" title="export data"><img src="icons/download.png"></button>
-                <button onclick="export_range()" title="export only frames between the start-end input dates"><img src="icons/downrange.png"></button>
-                <button onclick="import_data()" title="import data"><img src="icons/upload2.png"></button>
+                <button onclick="export_data()" title="export data">export</button>
+                <button onclick="export_range()" title="export only frames between the start-end input dates">export range</button>
+                <button onclick="import_data()" title="import data">upload</button>
+                <button id="authorize-button" class="btn" title="Get events from your google calendar">from google</button>
+                <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
             </div>
         </div>
         <div id="info" class="hidden">
@@ -135,9 +137,7 @@
                 <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
                 <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
                 <button class="btn" onclick="tq.hide_19_8()" title="Hides the 19:00 - 08:00 hours">19-08</button>
-                <button class="btn" onclick="tq.goto_spec_end()" title="Moves the blue line to the specified end date and time">from end</button>
-                <button id="authorize-button" class="btn" title="Get events from your google calendar">from google</button>
-                <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
+                <button class="btn" onclick="tq.goto_spec_end()" title="Moves the blue line to the specified end date and time">mark end</button>
             </div>
         </div>
         <div id="visualization"></div>
