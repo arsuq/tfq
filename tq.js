@@ -331,6 +331,7 @@ function run() {
     }
 
     var options = {
+        orientation: 'top',
         start: new Date(now).setDate(now.getHours() - 2),
         end: new Date(now).setDate(now.getHours() + 2),
         zoomMin: 1000 * 20,
