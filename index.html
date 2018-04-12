@@ -105,12 +105,12 @@
         <div id="todowrp" class="hidden">
             <div><span style="font-size: 1.4em;"><b>Todo list</b></span></div>
             <div id="todo-toolbar">
-                <button class="btn" onclick="todo.create_item()">add</button>
-                <!-- <button class="btn">track</button> -->
-                <button class="btn" onclick="todo.remove_selected()">remove</button>
-                <button class="btn" onclick="todo.clear()">clear</button>
-                <button class="btn" onclick="todo.loadlist()">open</button>
-                <button class="btn" onclick="todo.savelist()">save</button>
+                <button class="btn" onclick="todo.create_item()" title="doesn't save">add</button>
+                <button class="btn" onclick="todo.remove_selected()" title="doesn't save">remove</button>
+                <button class="btn" onclick="todo.parse_selected()" title="if you type HTML">parse</button>
+                <button class="btn" onclick="todo.clear()" title="press save to update the local storage">clear</button>
+                <button class="btn" onclick="todo.loadlist()" title="from local storage">open</button>
+                <button class="btn" onclick="todo.savelist()" title="to local storage">save</button>
             </div>
             <div id="todo-list-host">
             </div>

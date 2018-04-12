@@ -951,6 +951,18 @@ function todos() {
         }
     }
 
+    function parse_selected() {
+        let selected = HOST.querySelectorAll('.' + SELECTED_CSS)
+        if (selected.length > 0)
+            for (let s of selected) {
+                let h = s.querySelectorAll('.' + HEADER_TITLE_CSS)
+                let d = s.querySelectorAll('.' + DESC_CSS)
+                if (h.length > 0) h[0].innerHTML = h[0].innerText
+                if (d.length > 0) d[0].innerHTML = d[0].innerText
+            }
+
+    }
+
     return {
         LS_KEY,
         toggle,
@@ -958,6 +970,7 @@ function todos() {
         savelist,
         create_item,
         remove_selected,
+        parse_selected,
         clear,
         merge
     }
