@@ -882,7 +882,7 @@ function todos() {
                     L.push(item)
                 }
             }
-
+            if (L.length < 1 && !confirm('Save empty?')) return
             let sL = JSON.stringify(L)
             localStorage.setItem(LS_KEY, sL)
             tq.ntf('Todo list saved', 'ntf-ok')
