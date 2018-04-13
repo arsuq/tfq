@@ -851,20 +851,19 @@ function todos() {
     function merge(items) {
         let s = localStorage.getItem(LS_KEY)
         let L = JSON.parse(s)
-        if (L) {
-            while (HOST.children.length > 0)
-                HOST.removeChild(HOST.firstChild)
-            let IDs = new Set()
+        while (HOST.children.length > 0)
+            HOST.removeChild(HOST.firstChild)
+        let IDs = new Set()
+        if (L)
             for (let l of L) {
                 create_item(l)
                 if (l.id) IDs.add(l.id)
             }
-            for (let l of items) {
-                if (l.id) {
-                    if (!IDs.has(l.id))
-                        create_item(l)
-                } else create_item(l)
-            }
+        for (let l of items) {
+            if (l.id) {
+                if (!IDs.has(l.id))
+                    create_item(l)
+            } else create_item(l)
         }
     }
 
