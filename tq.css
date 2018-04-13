@@ -266,6 +266,7 @@ body {
     background-size: 100%;
     border: none;
     margin: 7px;
+    padding: 0;
     outline: none;
     cursor: pointer;
 }
