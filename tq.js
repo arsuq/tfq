@@ -985,7 +985,7 @@ function export_range() {
     }
 }
 
-function export_data(fromdate, todate, filename = 'tfq.data') {
+function export_data(fromdate, todate, filename) {
     if (tq && todos) {
         // let frames = localStorage.getItem(tq.LS_KEY)
         let todolist = localStorage.getItem(todo.LS_KEY)
@@ -1002,6 +1002,7 @@ function export_data(fromdate, todate, filename = 'tfq.data') {
             todo: todolist ? JSON.parse(todolist) : null
         }
         let asjson = JSON.stringify(exp)
+        if (!filename) filename = `tfq-${moment().format('YYMMDD-HHmm')}.data`
         save_to_file(asjson, filename)
     }
 }
