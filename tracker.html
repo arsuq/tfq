@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tracker</title>
+    <script src="tracker.js"></script>
+    <link href="tracker.css" rel="stylesheet" type="text/css">
+</head>
+</head>
+
+
+<body>
+    <div id="ntf"></div>
+    <div id="tracker-title"><img onclick="(function(){document.location.href = 'index.html'})()" src="tracker.png" width="180"></div>
+    <div id="tracker-wrp">
+        <div id="tracker-toolbar">
+            <button onclick="tracker.create_item()" title="add"><img src="icons/plus.png" ></button>
+            <button onclick="tracker.create_item(null, 'title', null, 0)" title="insert after selected"><img src="icons/addsib.png" ></button>
+            <button onclick="tracker.remove_selected()" title="remove"><img src="icons/minus.png" ></button>
+            <button onclick="tracker.new_list()" title="new list"><img src="icons/addlist.png"></button>
+            <button onclick="tracker.remove_list()" title="remove list"><img src="icons/removelist.png" ></button>
+            <button onclick="tracker.parse()" title="parse selected title"><img src="icons/parse.png" ></button>
+            <!-- <button onclick="tracker.load_from_ls()" title="load from local storage"><img src="icons/open.png" ></button> -->
+            <button onclick="tracker.save_to_ls()" title="save to local storage"><img src="icons/save.png" ></button>
+            <button onclick="tracker.clear()" title="clear"><img src="icons/delete.png" ></button>
+            <button onclick="tracker.set_symbol()" title="set symbol"><img src="icons/symbol.png" ></button>
+            <button onclick="tracker.set_done()" title="mark as closed"><img src="icons/x.png" ></button>
+            <button onclick="tracker.set_reset()" title="reset as new"><img src="icons/plus2.png"></button>
+            <button onclick="tracker.toggle(1)" title="collapse"><img src="icons/up.png" ></button>
+            <button onclick="tracker.toggle(0)" title="expand"><img src="icons/down.png" ></button>
+        </div>
+        <div id="lists-title"><span>Lists</span></div>
+        <div id="ls-lists-wrp"></div>
+        <div id="tracker-host">
+        </div>
+    </div>
+</body>
+
+</html>
