@@ -4,6 +4,7 @@ var tracker = (function() {
     const LS_LIST_PREFIX = "tracked-"
     let ntfdiv = null
     let host = null
+    let recursive_marks = 0
 
     document.addEventListener('DOMContentLoaded', function() {
         ntfdiv = document.getElementById('ntf')
@@ -83,7 +84,7 @@ var tracker = (function() {
         listswrp.appendChild(li)
     }
 
-    function create_item(parent, title = 'title', style = null, append = 1) {
+    function create_item(parent, title = 'title', style = '', append = 1) {
         if (!parent) {
             parent = document.querySelectorAll('.tr-item-selected')
             if (parent.length > 0) parent = parent[0]
@@ -194,6 +195,29 @@ var tracker = (function() {
         }
     }
 
+    function download() {
+        let selected_list = document.querySelector('.selected-list')
+        if (selected_list) ls_key = selected_list.getAttribute('key')
+        if (ls_key) {
+            let ls = localStorage.getItem(ls_key)
+            if (ls) {
+                const d = new Date()
+                const month = (1 + d.getMonth()).toString().padStart(2, '0')
+                const day = d.getDate().toString().padStart(2, '0')
+                let fn = `${d.getFullYear()}${month}${day}-${ls_key.replace(LS_LIST_PREFIX, '')}.json`
+                save_to_file(ls, fn)
+            }
+        }
+    }
+
+    function save_to_file(text, filename, type = 'text/plain') {
+        let a = document.createElement("a")
+        let file = new Blob([text], { type: type })
+        a.href = URL.createObjectURL(file)
+        a.download = filename
+        a.click()
+    }
+
     function ntf(text, css, dur = 1000) {
         let newntf = document.createElement('div')
         newntf.innerHTML = text
@@ -244,23 +268,55 @@ var tracker = (function() {
         if (sh) {
             let s = sh.querySelector('.tr-item-header-status')
             if (s) {
-                if (!symbol) symbol = `[${prompt('Type symbol')}]`
-                let pp = s.parentElement.parentElement
-                if (!pp.classList.contains('tr-item')) pp == s.parentElement
-                let alldown = pp.querySelectorAll('.tr-item-header-status')
+                if (!symbol) {
+                    let pr = prompt('Type symbol')
+                    if (!pr) return
+                    symbol = `[${pr}]`
+                }
                 s.innerText = symbol
-                for (c of alldown) c.innerText = symbol
+                let pp = s.parentElement.parentElement
+                if (recursive_marks > 0) {
+                    if (!pp.classList.contains('tr-item')) pp == s.parentElement
+                    let alldown = pp.querySelectorAll('.tr-item-header-status')
+                    for (c of alldown) c.innerText = symbol
+                }
             }
         }
     }
 
-    function set_done() {
-        set_symbol('[x]')
+    function recursive(btn) {
+        btn.classList.toggle('toggle')
+        recursive_marks = recursive_marks == 1 ? 0 : 1;
     }
 
-    function set_reset() {
-        set_symbol('[+]')
+    function up() {
+        let sh = host.querySelector('.tr-item-selected')
+        if (sh && sh.parentElement.children.length > 1 && sh.previousSibling)
+            sh.parentNode.insertBefore(sh, sh.previousSibling);
     }
+
+    function down() {
+        let sh = host.querySelector('.tr-item-selected')
+        if (sh && sh.parentElement.children.length > 1 && sh.nextSibling)
+            sh.nextSibling.parentNode.insertBefore(sh, sh.nextSibling.nextSibling);
+    }
+
+    function swipe() {
+        try {
+            const DROPPED = '[-]'
+            const CLOSED = '[x]'
+            let statuses = host.querySelectorAll('.tr-item-header-status')
+            if (statuses.length > 0)
+                for (let st of statuses)
+                    if (st.innerText == DROPPED || st.innerText == CLOSED) {
+                        let p = st.parentElement.parentElement
+                        if (p && p.classList.contains('tr-item'))
+                            p.remove()
+                    }
+
+        } catch (ex) {}
+    }
+
 
     return {
         create_item,
@@ -271,11 +327,14 @@ var tracker = (function() {
         clear,
         toggle,
         set_symbol,
-        set_done,
-        set_reset,
         from_list,
         new_list,
         remove_list,
+        recursive,
+        download,
+        up,
+        down,
+        swipe,
         ntf
     }
 })()
