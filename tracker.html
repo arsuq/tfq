@@ -18,7 +18,7 @@
     <div id="tracker-title"><img style="cursor: pointer;" title="go to time frames" onclick="(function(){document.location.href = 'index.html'})()" src="tracker.png" width="180"></div>
     <div id="tracker-wrp">
         <div id="tracker-toolbar">
-            <button onclick="tracker.create_item(null, 'title', null, 0)" title="insert after selected"><img src="icons/addsib.png" ></button>
+            <button onclick="tracker.create_item(null, 'title', '+', null, 0)" title="insert after selected"><img src="icons/addsib.png" ></button>
             <button onclick="tracker.create_item()" title="add"><img src="icons/plus.png" ></button>
             <button onclick="tracker.remove_selected()" title="remove"><img src="icons/minus.png" ></button>
             <button onclick="tracker.new_list()" title="new list"><img src="icons/addlist.png"></button>
@@ -34,13 +34,13 @@
             <button onclick="tracker.toggle(0)" title="expand"><img src="icons/down.png" ></button>
             <br>
             <button onclick="tracker.set_symbol()">symbol</button>
-            <button onclick="tracker.set_symbol('[@]')">current</button>
-            <button onclick="tracker.set_symbol('[%]')">in prog</button>
-            <button onclick="tracker.set_symbol('[h]')">halt</button>
-            <button onclick="tracker.set_symbol('[b]')">block</button>
-            <button onclick="tracker.set_symbol('[-]')">drop</button>
-            <button onclick="tracker.set_symbol('[x]')">close</button>
-            <button onclick="tracker.set_symbol('[+]')">reset</button>
+            <button onclick="tracker.set_symbol('@','background-color: #b5fab5;')">current</button>
+            <button onclick="tracker.set_symbol('%','background-color: #ffd462;')">in prog</button>
+            <button onclick="tracker.set_symbol('h','background-color: #b794f2;')">halt</button>
+            <button onclick="tracker.set_symbol('b','background-color: #ff7e7e;')">block</button>
+            <button onclick="tracker.set_symbol('-','background-color: #545454; color: white;')">drop</button>
+            <button onclick="tracker.set_symbol('x','background-color: #3a5b95; color: #dde9ff;')">close</button>
+            <button onclick="tracker.set_symbol('+')">reset</button>
             <button onclick="tracker.swipe()" title="removes closed or dropped items">swipe</button>
         </div>
         <div id="lists-title"><span>Lists</span></div>

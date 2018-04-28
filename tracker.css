@@ -26,19 +26,21 @@ body {
 #tracker-wrp {}
 
 .tr-item {
-    padding: 0.3em;
-    margin: 0.3em;
+    /* padding: 0.3em; */
+    /* margin: 0.3em; */
     border: 1px solid transparent;
 }
 
 .tr-item-selected {
-    background-color: rgba(0, 255, 107, 0.432);
-    border: 1px solid #42bf76;
+    background-color: rgba(0, 0, 0, 0.08);
+    border: 1px solid #0000001c;
+    /* background-color: rgba(0, 255, 107, 0.432);
+    border: 1px solid #42bf76; */
 }
 
 .tr-item-header {
     cursor: pointer;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .tr-item-header:hover {
@@ -66,9 +68,12 @@ body {
 }
 
 .tr-item-header-status {
+    display: inline-block;
+    text-align: center;
     vertical-align: top;
-    opacity: 0.7;
     font-weight: bold;
+    min-width: 2em;
+    padding-top: 0.25em;
 }
 
 .tr-item-header-status-checked {}
@@ -80,6 +85,7 @@ body {
     margin-left: 0.5em;
     outline: none;
     background-color: white;
+    /* background: url('root.png'); */
     border: 1px solid #5858586b;
     border-radius: 0.35em;
     padding: 0.4em;

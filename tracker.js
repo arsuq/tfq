@@ -84,7 +84,7 @@ var tracker = (function() {
         listswrp.appendChild(li)
     }
 
-    function create_item(parent, title = 'title', style = '', append = 1) {
+    function create_item(parent, title = 'title', mark = '+', style = '', append = 1) {
         if (!parent) {
             parent = document.querySelectorAll('.tr-item-selected')
             if (parent.length > 0) parent = parent[0]
@@ -99,7 +99,7 @@ var tracker = (function() {
         let stitle = document.createElement('span')
         let status = document.createElement('span')
 
-        status.innerText = '[+]'
+        status.innerText = mark
 
         header.appendChild(status)
         header.appendChild(stitle)
@@ -146,11 +146,13 @@ var tracker = (function() {
             if (selected_list) ls_key = selected_list.getAttribute('key')
             let obj = new Map()
             let allitems = host.querySelectorAll('.tr-item-header-title')
-            let root = { title: '', subitems: [] }
+            let root = { title: '', mark: '', subitems: [] }
             for (let i of allitems) {
+                let status = i.parentElement.querySelector('.tr-item-header-status')
                 let oi = {
                     title: i.innerHTML,
                     style: i.getAttribute('style'),
+                    mark: status ? status.innerText : '+',
                     subitems: []
                 }
                 obj.set(i.parentElement.parentElement, oi)
@@ -175,7 +177,7 @@ var tracker = (function() {
                     host.removeChild(host.firstChild)
 
                 function make(jsonnode, domnode) {
-                    let n = create_item(domnode, jsonnode.title, jsonnode.style)
+                    let n = create_item(domnode, jsonnode.title, jsonnode.mark, jsonnode.style)
                     if (jsonnode.subitems)
                         for (let si of jsonnode.subitems)
                             make(si, n)
@@ -263,7 +265,7 @@ var tracker = (function() {
         }
     }
 
-    function set_symbol(symbol) {
+    function set_symbol(symbol, style = null) {
         let sh = host.querySelector('.tr-item-selected')
         if (sh) {
             let s = sh.querySelector('.tr-item-header-status')
@@ -271,7 +273,7 @@ var tracker = (function() {
                 if (!symbol) {
                     let pr = prompt('Type symbol')
                     if (!pr) return
-                    symbol = `[${pr}]`
+                    symbol = pr
                 }
                 s.innerText = symbol
                 let pp = s.parentElement.parentElement
@@ -280,6 +282,11 @@ var tracker = (function() {
                     let alldown = pp.querySelectorAll('.tr-item-header-status')
                     for (c of alldown) c.innerText = symbol
                 }
+            }
+            let t = sh.querySelector('.tr-item-header-title')
+            if (t) {
+                if (style) t.setAttribute('style', style)
+                else t.removeAttribute('style')
             }
         }
     }
@@ -303,8 +310,8 @@ var tracker = (function() {
 
     function swipe() {
         try {
-            const DROPPED = '[-]'
-            const CLOSED = '[x]'
+            const DROPPED = '-'
+            const CLOSED = 'x'
             let statuses = host.querySelectorAll('.tr-item-header-status')
             if (statuses.length > 0)
                 for (let st of statuses)
