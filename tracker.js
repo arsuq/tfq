@@ -12,21 +12,13 @@ var tracker = (function() {
         load_ls_lists()
         let items = document.querySelector(`[key='tracked-items']`)
         if (items) items.click()
-
-        let th = document.getElementById('tracker-host')
         let fx = document.getElementById('fixed-header')
-
-        window.onscroll = function() {
-            if (window.pageYOffset >= 5) fx.classList.add("stick")
-            else fx.classList.remove("stick")
-        }
-
-        // if (th && fx && fx.offsetTop < 5) {
-        //     window.onresize = function() {
-        //         th.style.paddingTop = `${fx.clientHeight+ntfdiv.clientHeight}px`
-        //     }
-        //     th.style.paddingTop = `${fx.clientHeight+ntfdiv.clientHeight}px`
-        // }
+        const isMobile = window.matchMedia("only screen and (max-width: 760px)")
+        if (!isMobile.matches)
+            window.onscroll = function() {
+                if (window.pageYOffset > 0) fx.classList.add("stick")
+                else fx.classList.remove("stick")
+            }
     })
 
     function load_ls_lists() {
@@ -131,7 +123,6 @@ var tracker = (function() {
                 if (s != item) s.classList.remove('tr-item-selected')
             item.classList.toggle('tr-item-selected')
         }
-
 
         if (style) stitle.setAttribute('style', style)
 
