@@ -1,6 +1,8 @@
 body {
     background: url(paper.png);
     font-family: monospace;
+    padding: 0;
+    margin: 0;
 }
 
 #tracker-title {
@@ -24,6 +26,18 @@ body {
 }
 
 #tracker-wrp {}
+
+#fixed-header {
+    /* position: fixed; */
+    width: 100%;
+    background: url(paper.png);
+    top: 0;
+}
+
+.stick {
+    position: fixed;
+    top: 0;
+}
 
 .tr-item {
     /* padding: 0.3em; */
@@ -157,6 +171,7 @@ body {
     margin: auto;
     max-width: 500px;
     text-align: center;
+    border-bottom: 1px solid #00000021;
 }
 
 .list {

@@ -12,6 +12,21 @@ var tracker = (function() {
         load_ls_lists()
         let items = document.querySelector(`[key='tracked-items']`)
         if (items) items.click()
+
+        let th = document.getElementById('tracker-host')
+        let fx = document.getElementById('fixed-header')
+
+        window.onscroll = function() {
+            if (window.pageYOffset >= 5) fx.classList.add("stick")
+            else fx.classList.remove("stick")
+        }
+
+        // if (th && fx && fx.offsetTop < 5) {
+        //     window.onresize = function() {
+        //         th.style.paddingTop = `${fx.clientHeight+ntfdiv.clientHeight}px`
+        //     }
+        //     th.style.paddingTop = `${fx.clientHeight+ntfdiv.clientHeight}px`
+        // }
     })
 
     function load_ls_lists() {
