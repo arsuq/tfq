@@ -5,6 +5,7 @@ var tracker = (function() {
     let ntfdiv = null
     let host = null
     let recursive_marks = 0
+    let isMobile = false
 
     document.addEventListener('DOMContentLoaded', function() {
         ntfdiv = document.getElementById('ntf')
@@ -13,12 +14,7 @@ var tracker = (function() {
         let items = document.querySelector(`[key='tracked-items']`)
         if (items) items.click()
         let fx = document.getElementById('fixed-header')
-        const isMobile = window.matchMedia("only screen and (max-width: 760px)")
-        if (!isMobile.matches)
-            window.onscroll = function() {
-                if (window.pageYOffset > 0) fx.classList.add("stick")
-                else fx.classList.remove("stick")
-            }
+        isMobile = window.matchMedia("only screen and (max-width: 760px)")
     })
 
     function load_ls_lists() {
@@ -98,7 +94,7 @@ var tracker = (function() {
             else parent = host
         }
         let pcontent = parent != host ? parent.querySelectorAll('.tr-item-content') : host
-        let hostelm = pcontent && pcontent.length > 0 ? pcontent[0] : null;
+        let hostelm = pcontent && pcontent.length > 0 ? pcontent[0] : host
         if (!hostelm) hostelm = document.getElementById(HOST_ELM_ID)
         let item = document.createElement('div')
         let header = document.createElement('div')
@@ -112,7 +108,7 @@ var tracker = (function() {
         header.appendChild(stitle)
         item.appendChild(header)
         item.appendChild(content)
-        if (append > 0) hostelm.appendChild(item)
+        if (append > 0 || parent == host) hostelm.appendChild(item)
         else hostelm.parentNode.parentNode.insertBefore(item, hostelm.parentNode.nextSibling)
 
         item.onclick = function(e) {
@@ -330,6 +326,9 @@ var tracker = (function() {
         } catch (ex) {}
     }
 
+    function sticktoolbar() {
+        document.getElementById('fixed-header').classList.toggle('stick')
+    }
 
     return {
         create_item,
@@ -348,6 +347,7 @@ var tracker = (function() {
         up,
         down,
         swipe,
-        ntf
+        ntf,
+        sticktoolbar
     }
 })()
