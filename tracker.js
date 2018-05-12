@@ -327,7 +327,18 @@ var tracker = (function() {
     }
 
     function sticktoolbar() {
-        document.getElementById('fixed-header').classList.toggle('stick')
+        let fx = document.getElementById('fixed-header')
+        let top = document.getElementById('tracker-toolbar').getBoundingClientRect().top
+        if (fx) {
+            if (fx.classList.contains('stick')) {
+                fx.classList.remove('stick')
+                if (host) host.style.marginTop = '1em'
+            } else {
+                fx.classList.add('stick')
+                if (host) host.style.marginTop = top + 16 + 'px'
+            }
+        }
+        // document.getElementById('fixed-header').classList.toggle('stick')
     }
 
     return {
