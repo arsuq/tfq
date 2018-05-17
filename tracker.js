@@ -328,14 +328,16 @@ var tracker = (function() {
 
     function sticktoolbar() {
         let fx = document.getElementById('fixed-header')
-        let top = document.getElementById('tracker-toolbar').getBoundingClientRect().top
+        let top = document.getElementById('fixed-header').getBoundingClientRect().height
+        let title = document.getElementById('tracker-title').getBoundingClientRect().height
         if (fx) {
             if (fx.classList.contains('stick')) {
                 fx.classList.remove('stick')
                 if (host) host.style.marginTop = '1em'
             } else {
                 fx.classList.add('stick')
-                if (host) host.style.marginTop = top + 16 + 'px'
+                let h = document.getElementById(HOST_ELM_ID)
+                if (h) h.style.marginTop = top - title + 'px'
             }
         }
         // document.getElementById('fixed-header').classList.toggle('stick')
