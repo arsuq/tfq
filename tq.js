@@ -297,9 +297,9 @@ function run() {
         items.clear()
     }
 
-    function datediff(item) {
+    function datediff(item, endtime) {
         let r = { d: 0, h: 0, m: 0, s: 0 }
-        let end = moment(item.end)
+        let end = moment(endtime ? endtime : item.end)
         let start = moment(item.start)
         let duration = moment.duration(end.diff(start));
         // r.d = duration.asDays()
@@ -495,7 +495,7 @@ function run() {
                     if (b.length > 0 && confirm(`Cut ${b[0].innerText}?`)) {
                         let tf = t.querySelectorAll(`[id='tf-${frame.id}']`) // the span with the time
                         if (tf.length > 0) {
-                            let diff = datediff(frame)
+                            let diff = datediff(frame, n)
                             tf[0].innerText = `${diff.h}h:${diff.m}m`
                         }
                         items.update({ id: selProps.items[0], end: n, content: t.outerHTML })
