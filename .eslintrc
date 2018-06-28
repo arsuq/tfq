@@ -1,9 +1,8 @@
 {
     "parserOptions": {
-        "ecmaVersion": 8
+        "ecmaVersion": 2018
     },
     "env": {
-
         "es6": true,
         "commonjs": true,
         "browser": true,

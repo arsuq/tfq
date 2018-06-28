@@ -731,19 +731,45 @@ function gooc() {
     // You may exploit my calendar quota :)
     const CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
     const API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
-    const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+    const DISCOVERY_DOCS = [
+        "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+    ];
     const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.file'
-    const DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media'
+    const DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
+    const BOUNDARY = '***';
+    const DRIVE_FILE_NAME = 'tfq-frames-data.json'
     let user = null
     let oauthToken = null
+    let drive_file_id = ''
+    let drive_file = null
 
     let authorizeButton = document.getElementById('authorize-button')
     let signoutButton = document.getElementById('signout-button')
     let uoloadButton = document.getElementById('upload-to-google')
+    let importFromDriveButton = document.getElementById('import-from-google')
 
     function handleClientLoad() {
         tq.debug_ntf('goog loaded')
         gapi.load('client:auth2', initClient);
+    }
+
+    function getdrivefile(clb) {
+        gapi.client.drive.files.list({
+            'q': `name='${DRIVE_FILE_NAME}' and trashed = false`,
+            'orderBy': 'modifiedByMeTime desc'
+        }).then(function(response) {
+            let files = response.result.files;
+            if (files && files.length > 0) {
+                drive_file_id = files[0].id
+                gapi.client.drive.files.get({
+                    'fileId': drive_file_id,
+                    'alt': 'media'
+                }).then(function(resp) {
+                    if (resp) clb(resp.body)
+                }).catch(() => { console.log('Failed to load the ' + DRIVE_FILE_NAME) })
+            }
+        });
     }
 
     function initClient() {
@@ -754,8 +780,8 @@ function gooc() {
             scope: SCOPES
         }).then(function() {
             authorizeButton.onclick = () => gapi.auth2.getAuthInstance().signIn().then(() => {
-                // user = gapi.auth2.getAuthInstance().currentUser.get()
-                // oauthToken = user.getAuthResponse().access_token
+                user = gapi.auth2.getAuthInstance().currentUser.get()
+                oauthToken = user.getAuthResponse().access_token
                 updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
             })
             signoutButton.onclick = () => {
@@ -769,24 +795,47 @@ function gooc() {
                 })
             }
 
-            uoloadButton.onclick = () => {
-                if (oauthToken)
+            function updatedrive(upload = 0) {
+                if (oauthToken) {
+                    let obj = { data: "sdfsdg", c: [1, 3] }
+                    let body = [,
+                        '--' + BOUNDARY,
+                        'Content-Type: application/json; charset=UTF-8', ,
+                        JSON.stringify({
+                            'name': DRIVE_FILE_NAME,
+                            'title': DRIVE_FILE_NAME,
+                            'mimeType': 'application/json'
+                        }), ,
+                        '--' + BOUNDARY,
+                        'Content-Type: application/json', ,
+                        JSON.stringify(obj), ,
+                        '--' + BOUNDARY + '--'
+                    ].join('\n')
                     fetch(DRIVE_URL, {
-                        method: 'post',
+                        method: upload > 0 ? 'post' : 'put',
                         headers: new Headers({
-                            'Content-Type': 'text/plain',
-                            'title': 'tfqdata',
-                            'Authorization': 'Bearer ' + oauthToken
+                            'Authorization': 'Bearer ' + oauthToken,
+                            'Content-Type': 'multipart/related; boundary=' + BOUNDARY,
+                            'Content-Length': body.length
                         }),
-                        body: 'data test'
+                        body: body
                     }).then(function(d) {
-                        console.log(d)
-                    }).then(function(d) {
-                        console.log(d)
+                        if (d && d.status == '404' && upload < 1) updatedrive(1)
+                        tq.ntf('Frames uploaded', 'ntf-ok')
                     }).catch(function(d) {
-                        console.log(d)
+                        tq.ntf('Upload failed', 'ntf-fail')
                     });
+                }
             }
+
+            importFromDriveButton.onclick = async function() {
+                getdrivefile((file) => { if (file) drive_file = file });
+            }
+
+            uoloadButton.onclick = async function() {
+                if (drive_file) updatedrive()
+            }
+
         });
     }
 
