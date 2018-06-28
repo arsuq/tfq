@@ -732,10 +732,14 @@ function gooc() {
     const CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
     const API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
     const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
-    const SCOPES = "https://www.googleapis.com/auth/calendar.readonly";
+    const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.file'
+    const DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=media'
+    let user = null
+    let oauthToken = null
 
-    let authorizeButton = document.getElementById('authorize-button');
-    let signoutButton = document.getElementById('signout-button');
+    let authorizeButton = document.getElementById('authorize-button')
+    let signoutButton = document.getElementById('signout-button')
+    let uoloadButton = document.getElementById('upload-to-google')
 
     function handleClientLoad() {
         tq.debug_ntf('goog loaded')
@@ -750,6 +754,8 @@ function gooc() {
             scope: SCOPES
         }).then(function() {
             authorizeButton.onclick = () => gapi.auth2.getAuthInstance().signIn().then(() => {
+                // user = gapi.auth2.getAuthInstance().currentUser.get()
+                // oauthToken = user.getAuthResponse().access_token
                 updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
             })
             signoutButton.onclick = () => {
@@ -761,6 +767,25 @@ function gooc() {
                     updateSigninStatus(false) // because of auth2.disconnect()
                     tq.ntf('Calendar read permissions revoked', 'ntf-ok')
                 })
+            }
+
+            uoloadButton.onclick = () => {
+                if (oauthToken)
+                    fetch(DRIVE_URL, {
+                        method: 'post',
+                        headers: new Headers({
+                            'Content-Type': 'text/plain',
+                            'title': 'tfqdata',
+                            'Authorization': 'Bearer ' + oauthToken
+                        }),
+                        body: 'data test'
+                    }).then(function(d) {
+                        console.log(d)
+                    }).then(function(d) {
+                        console.log(d)
+                    }).catch(function(d) {
+                        console.log(d)
+                    });
             }
         });
     }
