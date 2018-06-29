@@ -630,7 +630,9 @@ function run() {
         ntfdiv.appendChild(newntf)
         newntf.onclick = () => { newntf.remove() }
         setTimeout(function() {
-            ntfdiv.removeChild(newntf)
+            try {
+                ntfdiv.removeChild(newntf)
+            } catch (x) {}
         }, dur)
     }
 
@@ -737,6 +739,7 @@ function gooc() {
     ];
     const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/drive.file'
     const DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
+    const UPDATE_DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files/'
     const BOUNDARY = '***';
     const DRIVE_FILE_NAME = 'tfq-frames-data.json'
     let user = null
@@ -746,8 +749,9 @@ function gooc() {
 
     let authorizeButton = document.getElementById('authorize-button')
     let signoutButton = document.getElementById('signout-button')
-    let uoloadButton = document.getElementById('upload-to-google')
-    let importFromDriveButton = document.getElementById('import-from-google')
+    let mergeButton = document.getElementById('merge-with-google')
+    let fromgooglecalendar = document.getElementById('from-google-calendar')
+    let overridegoogle = document.getElementById('override-google')
 
     function handleClientLoad() {
         tq.debug_ntf('goog loaded')
@@ -755,7 +759,7 @@ function gooc() {
     }
 
     function getdrivefile(clb) {
-        gapi.client.drive.files.list({
+        return gapi.client.drive.files.list({
             'q': `name='${DRIVE_FILE_NAME}' and trashed = false`,
             'orderBy': 'modifiedByMeTime desc'
         }).then(function(response) {
@@ -766,10 +770,53 @@ function gooc() {
                     'fileId': drive_file_id,
                     'alt': 'media'
                 }).then(function(resp) {
-                    if (resp) clb(resp.body)
-                }).catch(() => { console.log('Failed to load the ' + DRIVE_FILE_NAME) })
-            }
+                    try {
+                        if (resp) {
+                            drive_file = resp.result
+                            clb(drive_file)
+                        }
+                    } catch (x) {}
+                }).catch((er) => {
+                    tq.ntf('Failed to load the ' + DRIVE_FILE_NAME, 'ntf-fail', 6000)
+                    console.log('Failed to load the ' + DRIVE_FILE_NAME + ' /  ' + er)
+                })
+            } else clb()
         });
+    }
+
+    function updatedrive(upload = 0, data, clb) {
+        if (oauthToken && data) {
+            let updatebody = JSON.stringify(data)
+            let body = [,
+                '--' + BOUNDARY,
+                'Content-Type: application/json; charset=UTF-8', ,
+                JSON.stringify({
+                    'name': DRIVE_FILE_NAME,
+                    'title': DRIVE_FILE_NAME,
+                    'mimeType': 'application/json'
+                }), ,
+                '--' + BOUNDARY,
+                'Content-Type: application/json', ,
+                JSON.stringify(data), ,
+                '--' + BOUNDARY + '--'
+            ].join('\n')
+            fetch(upload > 0 ? DRIVE_URL : UPDATE_DRIVE_URL + drive_file_id + '?uploadType=media', {
+                method: upload > 0 ? 'POST' : 'PATCH',
+                headers: new Headers({
+                    'Authorization': 'Bearer ' + oauthToken,
+                    'Content-Type': 'multipart/related; boundary=' + BOUNDARY,
+                    'Content-Length': upload > 0 ? body.length : updatebody.length
+                }),
+                body: upload > 0 ? body : updatebody
+            }).then(function(d) {
+                if (d) {
+                    tq.ntf('Frames uploaded', 'ntf-ok')
+                    if (clb) clb(d)
+                }
+            }).catch(function(d) {
+                tq.ntf('Upload failed', 'ntf-fail')
+            });
+        }
     }
 
     function initClient() {
@@ -794,59 +841,81 @@ function gooc() {
                     tq.ntf('Calendar read permissions revoked', 'ntf-ok')
                 })
             }
-
-            function updatedrive(upload = 0) {
-                if (oauthToken) {
-                    let obj = { data: "sdfsdg", c: [1, 3] }
-                    let body = [,
-                        '--' + BOUNDARY,
-                        'Content-Type: application/json; charset=UTF-8', ,
-                        JSON.stringify({
-                            'name': DRIVE_FILE_NAME,
-                            'title': DRIVE_FILE_NAME,
-                            'mimeType': 'application/json'
-                        }), ,
-                        '--' + BOUNDARY,
-                        'Content-Type: application/json', ,
-                        JSON.stringify(obj), ,
-                        '--' + BOUNDARY + '--'
-                    ].join('\n')
-                    fetch(DRIVE_URL, {
-                        method: upload > 0 ? 'post' : 'put',
-                        headers: new Headers({
-                            'Authorization': 'Bearer ' + oauthToken,
-                            'Content-Type': 'multipart/related; boundary=' + BOUNDARY,
-                            'Content-Length': body.length
-                        }),
-                        body: body
-                    }).then(function(d) {
-                        if (d && d.status == '404' && upload < 1) updatedrive(1)
-                        tq.ntf('Frames uploaded', 'ntf-ok')
-                    }).catch(function(d) {
-                        tq.ntf('Upload failed', 'ntf-fail')
-                    });
-                }
+            fromgooglecalendar.onclick = function() {
+                listUpcomingEvents()
             }
-
-            importFromDriveButton.onclick = async function() {
-                getdrivefile((file) => { if (file) drive_file = file });
+            mergeButton.onclick = function() {
+                merge_with_google_drive_file()
             }
-
-            uoloadButton.onclick = async function() {
-                if (drive_file) updatedrive()
+            overridegoogle.onclick = function() {
+                upload_frames_to_drive()
             }
-
         });
+    }
+
+    function merge_with_google_drive_file() {
+        getdrivefile((d) => {
+            try {
+                if (drive_file_id) {
+                    if (drive_file) {
+                        if (drive_file.frames) {
+                            let All = new Map()
+                            let frames = tq.items.get()
+                            for (let f of frames)
+                                All.set(f.id, f)
+                            for (let pe of drive_file.frames)
+                                All.set(pe.id, pe)
+                            let R = []
+                            for (let v of All.values())
+                                R.push(JSON.stringify(v))
+                            localStorage.setItem(tq.LS_KEY, JSON.stringify(R))
+                        }
+                        if (drive_file.todo) {
+                            let s = localStorage.getItem(todo.LS_KEY)
+                            let T = JSON.parse(s)
+                            let All = new Map()
+                            for (let t of T)
+                                All.set(t.id, t)
+                            for (let td of drive_file.todo)
+                                All.set(td.id, td)
+                            let R = []
+                            for (let v of All.values())
+                                R.push(v)
+                            localStorage.setItem(todo.LS_KEY, JSON.stringify(R))
+                        }
+                        tq = run()
+                        tq.ntf('The frames from your google drive are merged with the local data', 'ntf-ok', 6000)
+                    }
+                } else upload_frames_to_drive(1)
+            } catch (ex) { console.log(ex) }
+        })
+    }
+
+    function upload_frames_to_drive(createfile = 0) {
+        if (drive_file_id || createfile > 0) {
+            let frames = tq.items.get()
+            let todolist = localStorage.getItem(todo.LS_KEY)
+            let exp = {
+                frames: frames,
+                todo: todolist ? JSON.parse(todolist) : null
+            }
+            updatedrive(createfile, exp)
+        } else tq.ntf('You have to merge with the drive data first.', 'ntf-fail', 7000)
     }
 
     function updateSigninStatus(isSignedIn) {
         if (isSignedIn) {
             authorizeButton.classList.add('hidden')
             signoutButton.classList.remove('hidden')
-            listUpcomingEvents();
+            fromgooglecalendar.classList.remove('hidden')
+            overridegoogle.classList.remove('hidden')
+            mergeButton.classList.remove('hidden')
         } else {
             authorizeButton.classList.remove('hidden')
             signoutButton.classList.add('hidden')
+            fromgooglecalendar.classList.add('hidden')
+            overridegoogle.classList.add('hidden')
+            mergeButton.classList.add('hidden')
         }
     }
 
@@ -891,7 +960,9 @@ function gooc() {
         handleClientLoad,
         initClient,
         updateSigninStatus,
-        listUpcomingEvents
+        listUpcomingEvents,
+        merge_with_google_drive_file,
+        upload_frames_to_drive
     }
 }
 
@@ -920,6 +991,7 @@ function todos() {
             for (let l of L)
                 create_item(l)
         }
+        return L
     }
 
     function merge(items) {

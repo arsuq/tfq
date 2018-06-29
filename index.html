@@ -71,9 +71,10 @@
                 <button onclick="export_data()" title="export data">export</button>
                 <button onclick="export_range()" title="export only frames between the start-end input dates">export range</button>
                 <button onclick="import_data()" title="import data">import</button>
-                <button id="authorize-button" class="btn" title="Get events from your google calendar">from google</button>
-                <button id="upload-to-google" class="btn" title="Upload to google drive">to google drive</button>
-                <button id="import-from-google" class="btn" title="Import from google drive">from google drive</button>
+                <button id="authorize-button" class="btn" title="Give read/write permissions for google drive and read for the calendar events">authorize</button>
+                <button id="merge-with-google" class="btn hidden" title="Merge with google drive">merge with google drive</button>
+                <button id="override-google" class="btn hidden" title="Override the tfq file in your google drive">override google drive</button>
+                <button id="from-google-calendar" class="btn hidden" title="Get events from your google calendar">from google calendar</button>
                 <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
             </div>
         </div>

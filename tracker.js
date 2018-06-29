@@ -25,6 +25,7 @@ var tracker = (function() {
             for (let k of Object.keys(localStorage))
                 if (k.startsWith(LS_LIST_PREFIX)) {
                     let li = document.createElement('span')
+                    li.id = k.id ? k.id : new Date().getTime()
                     li.classList.add('list')
                     li.setAttribute('key', k)
                     li.innerText = k.replace(LS_LIST_PREFIX, '')
@@ -59,6 +60,8 @@ var tracker = (function() {
             if (k) {
                 localStorage.removeItem(k)
                 s.remove()
+                while (host.children.length > 0)
+                    host.removeChild(host.firstChild)
                 ntf('List removed', 'ntf-ok')
             }
         }
@@ -73,6 +76,7 @@ var tracker = (function() {
         }
         localStorage.setItem(key, JSON.stringify({ title: '', subitems: [] }))
         let li = document.createElement('span')
+        li.id = new Date().getTime()
         li.classList.add('list')
         li.setAttribute('key', key)
         li.innerText = key.replace(LS_LIST_PREFIX, '')
@@ -87,8 +91,12 @@ var tracker = (function() {
         listswrp.appendChild(li)
     }
 
-    function create_item(parent, title = 'title', mark = '+', style = '', append = 1) {
+    function create_item(parent, id, title = 'title', mark = '+', style = '', append = 1) {
         if (!parent) {
+            if (document.querySelectorAll('.selected-list').length < 1) {
+                ntf('Select a list', 'ntf-fail', 4000)
+                return
+            }
             parent = document.querySelectorAll('.tr-item-selected')
             if (parent.length > 0) parent = parent[0]
             else parent = host
@@ -108,6 +116,7 @@ var tracker = (function() {
         header.appendChild(stitle)
         item.appendChild(header)
         item.appendChild(content)
+        item.id = id ? id : new Date().getTime()
         if (append > 0 || parent == host) hostelm.appendChild(item)
         else hostelm.parentNode.parentNode.insertBefore(item, hostelm.parentNode.nextSibling)
 
@@ -142,16 +151,25 @@ var tracker = (function() {
         }
     }
 
-    function save_to_ls(ls_key = LS_KEY) {
+    function save_to_ls(ls_key) {
         if (host) {
-            let selected_list = document.querySelector('.selected-list')
-            if (selected_list) ls_key = selected_list.getAttribute('key')
+            let selected_list = null
+            if (!ls_key) {
+                selected_list = document.querySelector('.selected-list')
+                if (selected_list) ls_key = selected_list.getAttribute('key')
+                if (!ls_key) {
+                    ntf('Select a list', 'ntf-fail', 3000)
+                    return
+                }
+            } else selected_list = document.querySelector(`[key='${ls_key}'`)
+            if (!selected_list) throw 'list not found'
             let obj = new Map()
             let allitems = host.querySelectorAll('.tr-item-header-title')
-            let root = { title: '', mark: '', subitems: [] }
+            let root = { id: selected_list.id, title: '', mark: '', subitems: [] }
             for (let i of allitems) {
                 let status = i.parentElement.querySelector('.tr-item-header-status')
                 let oi = {
+                    id: i.parentElement.parentElement.id,
                     title: i.innerHTML,
                     style: i.getAttribute('style'),
                     mark: status ? status.innerText : '+',
@@ -179,7 +197,7 @@ var tracker = (function() {
                     host.removeChild(host.firstChild)
 
                 function make(jsonnode, domnode) {
-                    let n = create_item(domnode, jsonnode.title, jsonnode.mark, jsonnode.style)
+                    let n = create_item(domnode, jsonnode.id, jsonnode.title, jsonnode.mark, jsonnode.style)
                     if (jsonnode.subitems)
                         for (let si of jsonnode.subitems)
                             make(si, n)
@@ -230,7 +248,8 @@ var tracker = (function() {
         ntfdiv.appendChild(newntf)
         newntf.onclick = () => { newntf.remove() }
         setTimeout(function() {
-            ntfdiv.removeChild(newntf)
+            if (newntf.parentNode == ntfdiv)
+                ntfdiv.removeChild(newntf)
         }, dur)
     }
 
