@@ -368,7 +368,7 @@ var tracker = (function() {
         // document.getElementById('fixed-header').classList.toggle('stick')
     }
 
-    function mergedrive(listkey, clb) {
+    function mergedrive(listkey, uiclb) {
         if (!gcal) throw 'gcal'
         let list = null
         if (!listkey) {
@@ -380,6 +380,7 @@ var tracker = (function() {
         }
         if (!list || !list.getAttribute('key')) {
             ntf('Select a list', 'ntf-fail')
+            if (uiclb) uiclb()
             return
         }
         let key = list.getAttribute('key')
@@ -388,7 +389,7 @@ var tracker = (function() {
         const FILENAME = key2filename(key)
         gcal.getdrivefile(FILENAME,
             (d) => {
-                if (clb) clb()
+                if (uiclb) uiclb()
                 if (!d) {
                     gcal.updatedrive(1, pdata, null, FILENAME,
                         () => { ntf('The list was uploaded to your google drive as ' + FILENAME, 'ntf-ok') },
@@ -405,7 +406,7 @@ var tracker = (function() {
                 ntf('Sync successful', 'ntf-ok')
             },
             (ex) => {
-                if (clb) clb()
+                if (uiclb) uiclb()
                 ntf('Sync failed', 'ntf-fail')
             })
     }
@@ -460,10 +461,11 @@ var tracker = (function() {
             }
     }
 
-    function override_google_drive(clb) {
+    function override_google_drive(uiclb) {
         let L = document.querySelectorAll('.selected-list')
         if (L.length > 0) list = L[0]
         if (!list) {
+            if (uiclb) uiclb()
             ntf('Select a list', 'ntf-fail')
             return
         }
@@ -471,6 +473,7 @@ var tracker = (function() {
         if (key) {
             let fileid = drivefileMap.get(key)
             if (!fileid) {
+                if (uiclb) uiclb()
                 ntf('Merge with google drive first', 'ntf-fail', 4000)
                 return
             }
@@ -478,11 +481,11 @@ var tracker = (function() {
             let pdata = ldata ? JSON.parse(ldata) : {}
             gcal.updatedrive(0, pdata, fileid, null,
                 () => {
-                    if (clb) clb()
+                    if (uiclb) uiclb()
                     ntf('The list was updated', 'ntf-ok')
                 },
                 () => {
-                    if (clb) clb()
+                    if (uiclb) uiclb()
                     ntf('Upload failed', 'ntf-fail')
                 })
         }
