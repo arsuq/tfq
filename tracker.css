@@ -22,7 +22,7 @@ body {
     min-width: 200px;
     width: fit-content;
     margin: auto;
-    margin-top: 1em;
+    margin-top: 0.5em;
 }
 
 #tracker-wrp {}
@@ -108,7 +108,7 @@ body {
 }
 
 #tracker-toolbar {
-    margin-bottom: 1em;
+    margin-bottom: 0.5em;
     text-align: center;
 }
 
@@ -165,13 +165,14 @@ body {
 }
 
 #ls-lists-wrp {
-    padding: 1em;
+    padding: 0.2em;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
     margin: auto;
     max-width: 500px;
     text-align: center;
     border-bottom: 1px solid #00000021;
+    border-top: 1px solid #00000021;
 }
 
 .list {
@@ -192,10 +193,6 @@ body {
 .selected-list {
     background-color: rgba(0, 255, 107, 0.432) !important;
     border: 1px solid #42bf76 !important;
-}
-
-#lists-title {
-    text-align: center;
 }
 
 .toggle {
