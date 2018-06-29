@@ -727,10 +727,8 @@ function gooc() {
         document.head.appendChild(src)
     }
 
-
     registerjs()
 
-    // You may exploit my calendar quota :)
     const CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com';
     const API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604';
     const DISCOVERY_DOCS = [
@@ -758,41 +756,37 @@ function gooc() {
         gapi.load('client:auth2', initClient);
     }
 
-    function getdrivefile(clb) {
+    function getdrivefile(drivefilename, clb, clberr) {
         return gapi.client.drive.files.list({
-            'q': `name='${DRIVE_FILE_NAME}' and trashed = false`,
+            'q': `name='${drivefilename}' and trashed = false`,
             'orderBy': 'modifiedByMeTime desc'
         }).then(function(response) {
             let files = response.result.files;
             if (files && files.length > 0) {
-                drive_file_id = files[0].id
                 gapi.client.drive.files.get({
-                    'fileId': drive_file_id,
+                    'fileId': files[0].id,
                     'alt': 'media'
                 }).then(function(resp) {
                     try {
-                        if (resp) {
-                            drive_file = resp.result
-                            clb(drive_file)
-                        }
-                    } catch (x) {}
+                        if (resp) clb({ fileid: files[0].id, result: resp.result })
+                    } catch (err) { console.log(err) }
                 }).catch((er) => {
-                    tq.ntf('Failed to load the ' + DRIVE_FILE_NAME, 'ntf-fail', 6000)
-                    console.log('Failed to load the ' + DRIVE_FILE_NAME + ' /  ' + er)
+                    console.log('Failed to load the ' + drivefilename + ' /  ' + er)
+                    if (clberr) clberr(er)
                 })
             } else clb()
         });
     }
 
-    function updatedrive(upload = 0, data, clb) {
+    function updatedrive(upload = 0, data, drivefileid, drivefilename, clb, clbfail) {
         if (oauthToken && data) {
             let updatebody = JSON.stringify(data)
             let body = [,
                 '--' + BOUNDARY,
                 'Content-Type: application/json; charset=UTF-8', ,
                 JSON.stringify({
-                    'name': DRIVE_FILE_NAME,
-                    'title': DRIVE_FILE_NAME,
+                    'name': drivefilename,
+                    'title': drivefilename,
                     'mimeType': 'application/json'
                 }), ,
                 '--' + BOUNDARY,
@@ -800,7 +794,7 @@ function gooc() {
                 JSON.stringify(data), ,
                 '--' + BOUNDARY + '--'
             ].join('\n')
-            fetch(upload > 0 ? DRIVE_URL : UPDATE_DRIVE_URL + drive_file_id + '?uploadType=media', {
+            fetch(upload > 0 ? DRIVE_URL : UPDATE_DRIVE_URL + drivefileid + '?uploadType=media', {
                 method: upload > 0 ? 'POST' : 'PATCH',
                 headers: new Headers({
                     'Authorization': 'Bearer ' + oauthToken,
@@ -809,12 +803,9 @@ function gooc() {
                 }),
                 body: upload > 0 ? body : updatebody
             }).then(function(d) {
-                if (d) {
-                    tq.ntf('Frames uploaded', 'ntf-ok')
-                    if (clb) clb(d)
-                }
+                if (d && clb) clb(d)
             }).catch(function(d) {
-                tq.ntf('Upload failed', 'ntf-fail')
+                if (clbfail) clbfail()
             });
         }
     }
@@ -842,20 +833,27 @@ function gooc() {
                 })
             }
             fromgooglecalendar.onclick = function() {
-                listUpcomingEvents()
+                fromgooglecalendar.disabled = true
+                listUpcomingEvents(100, () => { fromgooglecalendar.disabled = false })
             }
             mergeButton.onclick = function() {
-                merge_with_google_drive_file()
+                mergeButton.disabled = true
+                merge_with_google_drive_file(() => { mergeButton.disabled = false })
             }
             overridegoogle.onclick = function() {
-                upload_frames_to_drive()
+                overridegoogle.disabled = true
+                upload_frames_to_drive(0, () => { overridegoogle.disabled = false })
             }
         });
     }
 
-    function merge_with_google_drive_file() {
-        getdrivefile((d) => {
+    function merge_with_google_drive_file(clb) {
+        getdrivefile(DRIVE_FILE_NAME, (d) => {
             try {
+                if (clb) clb()
+                if (!d) return
+                drive_file = d.result
+                drive_file_id = d.fileid
                 if (drive_file_id) {
                     if (drive_file) {
                         if (drive_file.frames) {
@@ -888,18 +886,29 @@ function gooc() {
                     }
                 } else upload_frames_to_drive(1)
             } catch (ex) { console.log(ex) }
+        }, (err) => {
+            if (clb) clb()
+            tq.ntf('Failed to load the ' + drivefilename, 'ntf-fail', 6000)
         })
     }
 
-    function upload_frames_to_drive(createfile = 0) {
+    function upload_frames_to_drive(createfile = 0, clb) {
         if (drive_file_id || createfile > 0) {
             let frames = tq.items.get()
             let todolist = localStorage.getItem(todo.LS_KEY)
-            let exp = {
+            let data = {
                 frames: frames,
                 todo: todolist ? JSON.parse(todolist) : null
             }
-            updatedrive(createfile, exp)
+            updatedrive(createfile, data, drive_file_id, DRIVE_FILE_NAME,
+                () => {
+                    if (clb) clb()
+                    tq.ntf('Frames uploaded', 'ntf-ok')
+                },
+                () => {
+                    if (clb) clb()
+                    tq.ntf('Upload failed', 'ntf-fail')
+                })
         } else tq.ntf('You have to merge with the drive data first.', 'ntf-fail', 7000)
     }
 
@@ -919,7 +928,7 @@ function gooc() {
         }
     }
 
-    function listUpcomingEvents(maxResults = 100) {
+    function listUpcomingEvents(maxResults = 100, clb) {
         gapi.client.calendar.events.list({
             'calendarId': 'primary',
             'timeMin': (new Date()).toISOString(),
@@ -953,6 +962,7 @@ function gooc() {
                     }
                 }
             } else tq.ntf('No upcoming events found.', 'ntf-ok', 2000)
+            if (clb) clb()
         });
     }
 
@@ -961,6 +971,8 @@ function gooc() {
         initClient,
         updateSigninStatus,
         listUpcomingEvents,
+        getdrivefile,
+        updatedrive,
         merge_with_google_drive_file,
         upload_frames_to_drive
     }

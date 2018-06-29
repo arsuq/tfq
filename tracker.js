@@ -1,3 +1,4 @@
+var gcal = null
 var tracker = (function() {
     const HOST_ELM_ID = 'tracker-host'
     const LS_KEY = 'tracked-items'
@@ -6,10 +7,12 @@ var tracker = (function() {
     let host = null
     let recursive_marks = 0
     let isMobile = false
+    let drivefileMap = new Map() // list key, drive file key
 
     document.addEventListener('DOMContentLoaded', function() {
         ntfdiv = document.getElementById('ntf')
         host = document.getElementById(HOST_ELM_ID)
+        gcal = goog()
         load_ls_lists()
         let items = document.querySelector(`[key='tracked-items']`)
         if (items) items.click()
@@ -24,20 +27,23 @@ var tracker = (function() {
                 listswrp.removeChild(listswrp.firstChild)
             for (let k of Object.keys(localStorage))
                 if (k.startsWith(LS_LIST_PREFIX)) {
-                    let li = document.createElement('span')
-                    li.id = k.id ? k.id : new Date().getTime()
-                    li.classList.add('list')
-                    li.setAttribute('key', k)
-                    li.innerText = k.replace(LS_LIST_PREFIX, '')
-                    li.onclick = function() {
-                        let S = listswrp.querySelectorAll('.selected-list')
-                        if (S.length > 0)
-                            for (let s of S)
-                                if (s != li) s.classList.remove('selected-list')
-                        li.classList.toggle('selected-list')
-                        load_from_ls(1, k)
-                    }
-                    listswrp.appendChild(li)
+                    try {
+                        let parseval = JSON.parse(localStorage.getItem(k))
+                        let li = document.createElement('span')
+                        li.id = parseval.id ? parseval.id : new Date().getTime()
+                        li.classList.add('list')
+                        li.setAttribute('key', k)
+                        li.innerText = k.replace(LS_LIST_PREFIX, '')
+                        li.onclick = function() {
+                            let S = listswrp.querySelectorAll('.selected-list')
+                            if (S.length > 0)
+                                for (let s of S)
+                                    if (s != li) s.classList.remove('selected-list')
+                            li.classList.toggle('selected-list')
+                            load_from_ls(1, k)
+                        }
+                        listswrp.appendChild(li)
+                    } catch (ex) {}
                 }
         }
     }
@@ -57,7 +63,7 @@ var tracker = (function() {
         let s = document.querySelector('.selected-list')
         if (s) {
             let k = s.getAttribute('key')
-            if (k) {
+            if (k && confirm('Remove list ' + k + '?')) {
                 localStorage.removeItem(k)
                 s.remove()
                 while (host.children.length > 0)
@@ -362,6 +368,126 @@ var tracker = (function() {
         // document.getElementById('fixed-header').classList.toggle('stick')
     }
 
+    function mergedrive(listkey, clb) {
+        if (!gcal) throw 'gcal'
+        let list = null
+        if (!listkey) {
+            let L = document.querySelectorAll('.selected-list')
+            if (L.length > 0) list = L[0]
+        } else {
+            let L = document.querySelectorAll(listkey)
+            if (L.length > 0) list = L[0]
+        }
+        if (!list || !list.getAttribute('key')) {
+            ntf('Select a list', 'ntf-fail')
+            return
+        }
+        let key = list.getAttribute('key')
+        let ldata = localStorage.getItem(key)
+        let pdata = ldata ? JSON.parse(ldata) : {}
+        const FILENAME = key2filename(key)
+        gcal.getdrivefile(FILENAME,
+            (d) => {
+                if (clb) clb()
+                if (!d) {
+                    gcal.updatedrive(1, pdata, null, FILENAME,
+                        () => { ntf('The list was uploaded to your google drive as ' + FILENAME, 'ntf-ok') },
+                        () => { ntf('Upload failed', 'ntf-fail') })
+                } else {
+                    drivefileMap.set(key, d.fileid)
+                    let mergedlocal = try_merge_objects(pdata, d.result)
+                    if (mergedlocal) {
+                        let str = JSON.stringify(mergedlocal)
+                        localStorage.setItem(key, str)
+                        load_from_ls(1, key)
+                    }
+                }
+                ntf('Sync successful', 'ntf-ok')
+            },
+            (ex) => {
+                if (clb) clb()
+                ntf('Sync failed', 'ntf-fail')
+            })
+    }
+
+    function key2filename(key) {
+        return key + '.json'
+    }
+
+    function try_merge_objects(localjson, drivejson) {
+        if (localjson && drivejson)
+            try {
+                let M = new Map()
+
+                function allkeys(obj) {
+                    if (obj) {
+                        let val = M.get(obj.id)
+                        if (!val) {
+                            val = { set: new Set(), value: obj }
+                            M.set(obj.id, val)
+                        } else {
+                            // override the title, mark, style etc. with the drive data - allkeys(drivejson)
+                            for (let k of Object.keys(val.value))
+                                if (k != 'subitems') {
+                                    if (obj[k] != undefined) val.value[k] = obj[k]
+                                    else delete val.value[k]
+                                }
+                        }
+                        for (let node of obj.subitems) {
+                            val.set.add(node.id)
+                            allkeys(node)
+                        }
+                    }
+                }
+
+                allkeys(localjson)
+                allkeys(drivejson)
+
+                for (let v of M.values())
+                    if (v.value && v.value.subitems) v.value.subitems = [] // remove old relations
+                for (let v of M.values()) {
+                    for (let si of v.set.keys()) {
+                        let i = M.get(si).value
+                        if (i) v.value.subitems.push(i)
+                    }
+                }
+
+                let rootid = localjson.id != drivejson.id ? drivejson.id : localjson.id
+                return M.get(rootid).value
+
+            } catch (ex) {
+                console.log(ex)
+            }
+    }
+
+    function override_google_drive(clb) {
+        let L = document.querySelectorAll('.selected-list')
+        if (L.length > 0) list = L[0]
+        if (!list) {
+            ntf('Select a list', 'ntf-fail')
+            return
+        }
+        let key = list.getAttribute('key')
+        if (key) {
+            let fileid = drivefileMap.get(key)
+            if (!fileid) {
+                ntf('Merge with google drive first', 'ntf-fail', 4000)
+                return
+            }
+            let ldata = localStorage.getItem(key)
+            let pdata = ldata ? JSON.parse(ldata) : {}
+            gcal.updatedrive(0, pdata, fileid, null,
+                () => {
+                    if (clb) clb()
+                    ntf('The list was updated', 'ntf-ok')
+                },
+                () => {
+                    if (clb) clb()
+                    ntf('Upload failed', 'ntf-fail')
+                })
+        }
+    }
+
     return {
         create_item,
         save_to_ls,
@@ -380,6 +506,147 @@ var tracker = (function() {
         down,
         swipe,
         ntf,
-        sticktoolbar
+        sticktoolbar,
+        mergedrive,
+        override_google_drive
     }
 })()
+
+function goog() {
+    function registerjs() {
+        let scr = document.getElementById('goog')
+        if (!scr) {
+            src = document.createElement('script')
+            src.id = 'goog'
+            src.onload = function() {
+                if (gcal) gapi.load('client:auth2', initClient)
+            }
+        }
+        src.setAttribute('defer', '')
+        src.setAttribute('src', 'https://apis.google.com/js/api.js')
+        document.head.appendChild(src)
+    }
+
+    registerjs()
+
+    const CLIENT_ID = '189775219070-f43ndgfe1sjakmp3q065000ek8tq4f27.apps.googleusercontent.com'
+    const API_KEY = 'AIzaSyDjDM4STm3EEz2Q78L2c4RQerlzTcjh604'
+    const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file'
+    const DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'
+    const UPDATE_DRIVE_URL = 'https://www.googleapis.com/upload/drive/v3/files/'
+    const BOUNDARY = '***';
+    let user = null
+    let oauthToken = null
+
+    let authorizebtn = document.getElementById('authorize-btn')
+    let revokebtn = document.getElementById('revoke-btn')
+    let mergebtn = document.getElementById('merge-btn')
+    let overridebtn = document.getElementById('override-btn')
+
+    function getdrivefile(drivefilename, clb, clberr) {
+        return gapi.client.drive.files.list({
+            'q': `name='${drivefilename}' and trashed = false`,
+            'orderBy': 'modifiedByMeTime desc'
+        }).then(function(response) {
+            let files = response.result.files;
+            if (files && files.length > 0) {
+                gapi.client.drive.files.get({
+                    'fileId': files[0].id,
+                    'alt': 'media'
+                }).then(function(resp) {
+                    try {
+                        if (resp) clb({ fileid: files[0].id, result: resp.result })
+                    } catch (err) { console.log(err) }
+                }).catch((er) => {
+                    console.log('Failed to load the ' + drivefilename + ' /  ' + er)
+                    if (clberr) clberr(er)
+                })
+            } else clb()
+        });
+    }
+
+    function updatedrive(upload = 0, data, drivefileid, drivefilename, clb, clbfail) {
+        if (oauthToken && data) {
+            let updatebody = JSON.stringify(data)
+            let body = [,
+                '--' + BOUNDARY,
+                'Content-Type: application/json; charset=UTF-8', ,
+                JSON.stringify({
+                    'name': drivefilename,
+                    'title': drivefilename,
+                    'mimeType': 'application/json'
+                }), ,
+                '--' + BOUNDARY,
+                'Content-Type: application/json', ,
+                JSON.stringify(data), ,
+                '--' + BOUNDARY + '--'
+            ].join('\n')
+            fetch(upload > 0 ? DRIVE_URL : UPDATE_DRIVE_URL + drivefileid + '?uploadType=media', {
+                method: upload > 0 ? 'POST' : 'PATCH',
+                headers: new Headers({
+                    'Authorization': 'Bearer ' + oauthToken,
+                    'Content-Type': 'multipart/related; boundary=' + BOUNDARY,
+                    'Content-Length': upload > 0 ? body.length : updatebody.length
+                }),
+                body: upload > 0 ? body : updatebody
+            }).then(function(d) {
+                if (d && clb) clb(d)
+            }).catch(function(d) {
+                if (clbfail) clbfail()
+            });
+        }
+    }
+
+    function initClient() {
+        gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: DISCOVERY_DOCS,
+            scope: SCOPES
+        }).then(function() {
+            authorizebtn.onclick = () => gapi.auth2.getAuthInstance().signIn().then(() => {
+                user = gapi.auth2.getAuthInstance().currentUser.get()
+                oauthToken = user.getAuthResponse().access_token
+                updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get())
+            })
+            revokebtn.onclick = () => {
+                let auth2 = gapi.auth2.getAuthInstance();
+                auth2.signOut().then(() => {
+                    gapi.auth2.getAuthInstance().disconnect()
+                    updateSigninStatus(false)
+                    tracker.ntf('Permissions revoked', 'ntf-ok')
+                })
+            }
+            mergebtn.onclick = () => {
+                mergebtn.disabled = true
+                tracker.mergedrive(null, () => { mergebtn.disabled = false })
+            }
+            overridebtn.onclick = () => {
+                overridebtn.disabled = true
+                tracker.override_google_drive(() => { overridebtn.disabled = false })
+            }
+        });
+    }
+
+    function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+            authorizebtn.classList.add('hidden')
+            revokebtn.classList.remove('hidden')
+            overridebtn.classList.remove('hidden')
+            mergebtn.classList.remove('hidden')
+        } else {
+            authorizebtn.classList.remove('hidden')
+            revokebtn.classList.add('hidden')
+            overridebtn.classList.add('hidden')
+            mergebtn.classList.add('hidden')
+        }
+    }
+
+    return {
+        initClient,
+        updateSigninStatus,
+        getdrivefile,
+        updatedrive
+    }
+}

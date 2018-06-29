@@ -201,3 +201,9 @@ body {
 .toggle {
     background: linear-gradient(#e2fcff, #31e8ff) !important;
 }
+
+button:disabled,
+button[disabled] {
+    color: #bbbbbb !important;
+    border: 1px solid #e4e4e4 !important;
+}

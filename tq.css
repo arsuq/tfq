@@ -270,3 +270,8 @@ body {
     outline: none;
     cursor: pointer;
 }
+
+button:disabled,
+button[disabled] {
+    color: #bbbbbb !important;
+}

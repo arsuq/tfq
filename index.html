@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<div id="allntfs"></div>
 
 <head>
     <meta charset="UTF-8">
@@ -19,11 +20,6 @@
             background-color: #8bf08b91;
             font-size: 16px;
         }
-        /* .vis-readonly,
-        .vis-readonly.vis-selected {
-            background-color: rgba(226, 226, 226, 0.534);
-            border: 1px solid rgba(161, 161, 161, 0.534);
-        } */
         
         .vis-item,
         .vis-item.vis-line {
@@ -43,10 +39,8 @@
         }
     </style>
 </head>
-</head>
 
-
-<body>
+<body class="hw-root">
     <div id="wrp">
         <div id="ntf"></div>
         <div id="title"><img style="cursor: pointer;" title="go to tracker" onclick="(function(){document.location.href = 'tracker.html'})()" src="logo.png" width="250"></div>
@@ -72,9 +66,9 @@
                 <button onclick="export_range()" title="export only frames between the start-end input dates">export range</button>
                 <button onclick="import_data()" title="import data">import</button>
                 <button id="authorize-button" class="btn" title="Give read/write permissions for google drive and read for the calendar events">authorize</button>
-                <button id="merge-with-google" class="btn hidden" title="Merge with google drive">merge with google drive</button>
-                <button id="override-google" class="btn hidden" title="Override the tfq file in your google drive">override google drive</button>
-                <button id="from-google-calendar" class="btn hidden" title="Get events from your google calendar">from google calendar</button>
+                <button id="merge-with-google" class="btn hidden" title="Merge with google drive">merge</button>
+                <button id="override-google" class="btn hidden" title="Override the tfq file in your google drive">push</button>
+                <button id="from-google-calendar" class="btn hidden" title="Get events from your google calendar">sync google calendar</button>
                 <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
             </div>
         </div>
@@ -90,10 +84,13 @@
                 <h3>Edit</h3>
                 <p>Select a time-frame (inactive included) and click the edit button <img src="icons/edit.png">, click save if you want to keep it. </p>
                 <h3>Storage</h3>
-                <p>Everything is kept in the local storage of the current browser. There is no server communication whatsoever and you cannot sync timeframes from different devices.
-                </p>
+                <p>Everything is kept in the local storage of the current browser, which means that there are storage limits (~5mb). For simplicity the save/load operations move the whole data between the memory and the LS, therefore why you shouldn't keep
+                    more that 1-2 megs of data.&nbsp;</p>
                 <p>When saving <img src="icons/save.png"> all time-frames are bundled as a single item and stored in the local storage under 'all-time-frames' key. To clear everything click the delete button <img src="icons/delete.png"></p>
                 <p>If you remove individual time-frames with the floating <i>x</i> button, save to update the storage.</p>
+                <h3>Google drive</h3>
+                <p>If you grant the RW permission, you may sync the localstorage data with your google drive. In order to do that first merge from the cloud then make changes, save locally and upload. There will be a file named 'tfq-frames-data.json' in
+                    the root folder. The Tracker uses the same workflow, however there will be a separate file on your google drive for each list because the merging and uploading are per list in the Tracker.</p>
                 <h3>Google calendar</h3>
                 <p>You may get future events from your calendar and plot them on the timeline, but you cannot edit or save them. </p>
                 <h3>Notification</h3>
@@ -122,18 +119,18 @@
             <div id="dateTimePickersInner">
                 <div class="dtpickrow">
                     <span>Start date:</span>
-                    <input type="date" name="startDatePicker" id="startDatePicker" /><br>
+                    <input type="date" name="startDatePicker" id="startDatePicker"><br>
                     <span>Start time:</span>
-                    <input type="time" name="startTimePicker" id="startTimePicker" />
+                    <input type="time" name="startTimePicker" id="startTimePicker">
                 </div>
                 <div class="dtpickrow">
                     <span>End date:</span>
-                    <input type="date" name="endDatePicker" id="endDatePicker" /><br>
+                    <input type="date" name="endDatePicker" id="endDatePicker"><br>
                     <span>End time:</span>
-                    <input type="time" name="endTimePicker" id="endTimePicker" />
+                    <input type="time" name="endTimePicker" id="endTimePicker">
                 </div>
                 <button class="btn" onclick="tq.create()">create</button>
-                <button id='lockbtn' class="btn" onclick="tq.lockframe()" title="prevent resize and drag">lock</button>
+                <button id="lockbtn" class="btn" onclick="tq.lockframe()" title="prevent resize and drag">lock</button>
                 <button class="btn" onclick="tq.update_dates()">update</button>
                 <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
                 <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
@@ -145,9 +142,9 @@
     </div>
     <div id="sound"></div>
     <div class="hidden">
-        <audio id="aud_start"><source src="audio/1.mp3" type="audio/mpeg"/> </audio>
-        <audio id="aud_end"><source src="audio/2.mp3" type="audio/mpeg"/> </audio>
-        <audio id="aud_point"><source src="audio/3.mp3" type="audio/mpeg"/> </audio>
+        <audio id="aud_start"><source src="audio/1.mp3" type="audio/mpeg"> </audio>
+        <audio id="aud_end"><source src="audio/2.mp3" type="audio/mpeg"> </audio>
+        <audio id="aud_point"><source src="audio/3.mp3" type="audio/mpeg"> </audio>
     </div>
 </body>
 

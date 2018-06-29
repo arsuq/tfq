@@ -20,7 +20,7 @@
     <div id="fixed-header">
         <div id="tracker-wrp">
             <div id="tracker-toolbar">
-                <button onclick="tracker.create_item(null, 'title', '+', null, 0)" title="insert after selected"><img src="icons/addsib.png" ></button>
+                <button onclick="tracker.create_item(null, null, 'title', '+', null, 0)" title="insert after selected"><img src="icons/addsib.png" ></button>
                 <button onclick="tracker.create_item()" title="Add"><img src="icons/plus.png" ></button>
                 <button onclick="tracker.remove_selected()" title="Remove"><img src="icons/minus.png" ></button>
                 <button onclick="tracker.new_list()" title="New list"><img src="icons/addlist.png"></button>
@@ -30,8 +30,10 @@
                 <button onclick="tracker.save_to_ls()" title="Save to local storage"><img src="icons/save.png" ></button>
                 <button onclick="tracker.clear()" title="Clear"><img src="icons/delete.png" ></button>
                 <button onclick="tracker.download()" title="Export"><img src="icons/download.png" ></button>
-                <button onclick="tracker.mergedrive()" title="Merge with the google drive data"><img src="icons/sync.png" ></button>
-                <button onclick="tracker.upload()" title="Upload to google drive"><img src="icons/uploadcloud.png" ></button>
+                <button id="authorize-btn" title="Grant permissions to read/write to your google drive"><img src="icons/access.png" ></button>
+                <button id="revoke-btn" class="hidden" title="Revoke the granted permissions"><img src="icons/noaccess.png" ></button>
+                <button id="merge-btn" class="hidden" title="Merge with the google drive data"><img src="icons/sync.png" ></button>
+                <button id="override-btn" class="hidden" title="Upload to google drive"><img src="icons/uploadcloud.png" ></button>
                 <button onclick="tracker.up()" title="Move up"><img src="icons/up2.png" ></button>
                 <button onclick="tracker.down()" title="Move down"><img src="icons/down2.png" ></button>
                 <button onclick="tracker.sticktoolbar()" title="Stick toolbar"><img src="icons/stick.png" ></button>
