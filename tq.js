@@ -79,6 +79,7 @@ function run() {
 
         timeline.moveTo(n)
         timeline.setCustomTime(n)
+        draggedtime = n
     }
 
     const SOUND_TYPE = { START: 1, END: 2, POINT: 3 }
