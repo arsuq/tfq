@@ -287,8 +287,9 @@ var tracker = (function () {
         if (s) {
             const C = []
             const H = []
-            for(const e of s.children)
-                if(e.classList.has())
+            for (const e of s.children)
+                if (e.classList.contains('tr-item-content')) C.push(e)
+                else if (e.classList.contains('tr-item-header')) H.push(e)
             // let C = s.querySelectorAll('.tr-item-content')
             // let H = s.querySelectorAll('.tr-item-header')
             if (C.length > 0)
