@@ -1,5 +1,5 @@
 var gcal = null
-var tracker = (function() {
+var tracker = (function () {
     const HOST_ELM_ID = 'tracker-host'
     const LS_KEY = 'tracked-items'
     const LS_LIST_PREFIX = "tracked-"
@@ -9,7 +9,7 @@ var tracker = (function() {
     let isMobile = false
     let drivefileMap = new Map() // list key, drive file key
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         ntfdiv = document.getElementById('ntf')
         host = document.getElementById(HOST_ELM_ID)
         gcal = goog()
@@ -34,7 +34,7 @@ var tracker = (function() {
                         li.classList.add('list')
                         li.setAttribute('key', k)
                         li.innerText = k.replace(LS_LIST_PREFIX, '')
-                        li.onclick = function() {
+                        li.onclick = function () {
                             let S = listswrp.querySelectorAll('.selected-list')
                             if (S.length > 0)
                                 for (let s of S)
@@ -43,7 +43,7 @@ var tracker = (function() {
                             load_from_ls(1, k)
                         }
                         listswrp.appendChild(li)
-                    } catch (ex) {}
+                    } catch (ex) { }
                 }
         }
     }
@@ -86,7 +86,7 @@ var tracker = (function() {
         li.classList.add('list')
         li.setAttribute('key', key)
         li.innerText = key.replace(LS_LIST_PREFIX, '')
-        li.onclick = function() {
+        li.onclick = function () {
             let S = listswrp.querySelectorAll('.selected-list')
             if (S.length > 0)
                 for (let s of S)
@@ -97,7 +97,7 @@ var tracker = (function() {
         listswrp.appendChild(li)
     }
 
-    function create_item(parent, id, title = 'title', mark = '+', style = '', append = 1) {
+    function create_item(parent, id, title = 'title', mark = '+', style = '', append = 1, iscollapsed = 0) {
         if (!parent) {
             if (document.querySelectorAll('.selected-list').length < 1) {
                 ntf('Select a list', 'ntf-fail', 4000)
@@ -126,7 +126,7 @@ var tracker = (function() {
         if (append > 0 || parent == host) hostelm.appendChild(item)
         else hostelm.parentNode.parentNode.insertBefore(item, hostelm.parentNode.nextSibling)
 
-        item.onclick = function(e) {
+        item.onclick = function (e) {
             e.preventDefault()
             e.stopPropagation()
             let sel = document.querySelectorAll('.tr-item-selected')
@@ -145,6 +145,11 @@ var tracker = (function() {
         status.classList.add('tr-item-header-status')
         content.classList.add('tr-item-content')
 
+        if (iscollapsed === true) {
+            header.classList.add('tr-item-header-collapsed')
+            content.classList.add('hidden')
+        }
+
         return item
     }
 
@@ -152,7 +157,7 @@ var tracker = (function() {
         let selected = host.querySelectorAll('.tr-item-selected')
         if (selected.length > 0) {
             for (let s of selected)
-                try { s.remove() } catch (ex) {}
+                try { s.remove() } catch (ex) { }
             ntf('Items removed', 'ntf-ok')
         }
     }
@@ -177,6 +182,7 @@ var tracker = (function() {
                 let oi = {
                     id: i.parentElement.parentElement.id,
                     title: i.innerHTML,
+                    iscollapsed: i.parentElement.classList.contains('tr-item-header-collapsed'),
                     style: i.getAttribute('style'),
                     mark: status ? status.innerText : '+',
                     subitems: []
@@ -203,7 +209,7 @@ var tracker = (function() {
                     host.removeChild(host.firstChild)
 
                 function make(jsonnode, domnode) {
-                    let n = create_item(domnode, jsonnode.id, jsonnode.title, jsonnode.mark, jsonnode.style)
+                    let n = create_item(domnode, jsonnode.id, jsonnode.title, jsonnode.mark, jsonnode.style, 1, jsonnode.iscollapsed)
                     if (jsonnode.subitems)
                         for (let si of jsonnode.subitems)
                             make(si, n)
@@ -253,7 +259,7 @@ var tracker = (function() {
         newntf.classList.add('newntf')
         ntfdiv.appendChild(newntf)
         newntf.onclick = () => { newntf.remove() }
-        setTimeout(function() {
+        setTimeout(function () {
             if (newntf.parentNode == ntfdiv)
                 ntfdiv.removeChild(newntf)
         }, dur)
@@ -279,8 +285,12 @@ var tracker = (function() {
         let s = document.querySelector('.tr-item-selected')
         if (!s) s = host
         if (s) {
-            let C = s.querySelectorAll('.tr-item-content')
-            let H = s.querySelectorAll('.tr-item-header')
+            const C = []
+            const H = []
+            for(const e of s.children)
+                if(e.classList.has())
+            // let C = s.querySelectorAll('.tr-item-content')
+            // let H = s.querySelectorAll('.tr-item-header')
             if (C.length > 0)
                 for (let c of C)
                     if (collapse > 0) c.classList.add('hidden')
@@ -348,7 +358,7 @@ var tracker = (function() {
                             p.remove()
                     }
 
-        } catch (ex) {}
+        } catch (ex) { }
     }
 
     function sticktoolbar() {
@@ -521,7 +531,7 @@ function goog() {
         if (!scr) {
             src = document.createElement('script')
             src.id = 'goog'
-            src.onload = function() {
+            src.onload = function () {
                 if (gcal) gapi.load('client:auth2', initClient)
             }
         }
@@ -551,13 +561,13 @@ function goog() {
         return gapi.client.drive.files.list({
             'q': `name='${drivefilename}' and trashed = false`,
             'orderBy': 'modifiedByMeTime desc'
-        }).then(function(response) {
+        }).then(function (response) {
             let files = response.result.files;
             if (files && files.length > 0) {
                 gapi.client.drive.files.get({
                     'fileId': files[0].id,
                     'alt': 'media'
-                }).then(function(resp) {
+                }).then(function (resp) {
                     try {
                         if (resp) clb({ fileid: files[0].id, result: resp.result })
                     } catch (err) { console.log(err) }
@@ -593,9 +603,9 @@ function goog() {
                     'Content-Length': upload > 0 ? body.length : updatebody.length
                 }),
                 body: upload > 0 ? body : updatebody
-            }).then(function(d) {
+            }).then(function (d) {
                 if (d && clb) clb(d)
-            }).catch(function(d) {
+            }).catch(function (d) {
                 if (clbfail) clbfail()
             });
         }
@@ -607,7 +617,7 @@ function goog() {
             clientId: CLIENT_ID,
             discoveryDocs: DISCOVERY_DOCS,
             scope: SCOPES
-        }).then(function() {
+        }).then(function () {
             authorizebtn.onclick = () => gapi.auth2.getAuthInstance().signIn().then(() => {
                 user = gapi.auth2.getAuthInstance().currentUser.get()
                 oauthToken = user.getAuthResponse().access_token
