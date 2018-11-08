@@ -46,10 +46,8 @@ body {
 }
 
 .tr-item-selected {
-    background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(137, 247, 183, 0.30);
     border: 1px solid #0000001c;
-    /* background-color: rgba(0, 255, 107, 0.432);
-    border: 1px solid #42bf76; */
 }
 
 .tr-item-header {
@@ -57,23 +55,15 @@ body {
     font-size: 15px;
 }
 
-.tr-item-header:hover {
-    /* background-color: white; */
-}
-
 .tr-item-header-collapsed {
     background-color: rgba(175, 175, 175, 0.15);
     border: 1px dotted rgb(156, 156, 156);
-    border-bottom-right-radius: 1.3em;
+    border-left:2px solid red;
     padding: 0.15em;
     padding-right: 0.8em;
     color: #464646;
 }
 
-
-/* .tr-item-header-collapsed::after {
-    content: ' *';
-} */
 
 .tr-item-content {
     margin-left: 1.0em;
@@ -113,12 +103,12 @@ body {
 }
 
 #tracker-toolbar button {
-    background: linear-gradient(white, #ececec);
+    /* background: linear-gradient(white, #ececec); 
     padding-top: 7px;
     padding-bottom: 5px;
     padding-left: 10px;
-    padding-right: 10px;
-    border: 1px solid #b9b9b9;
+    padding-right: 10px; 
+    border: 1px solid #b9b9b9; */
     cursor: pointer;
     user-select: none;
     outline: none;
@@ -127,9 +117,9 @@ body {
     margin-top: 7px;
 }
 
-#tracker-toolbar button:hover {
+/* #tracker-toolbar button:hover {
     background: linear-gradient(#ffffff, #d4d4d4);
-}
+} */
 
 #ntf {
     text-align: center;
@@ -195,12 +185,47 @@ body {
     border: 1px solid #42bf76 !important;
 }
 
-.toggle {
-    background: linear-gradient(#e2fcff, #31e8ff) !important;
-}
+
 
 button:disabled,
 button[disabled] {
     color: #bbbbbb !important;
     border: 1px solid #e4e4e4 !important;
+}
+
+@media screen and (max-width: 960px) {
+    #tracker-toolbar button {
+        background: transparent;
+        border: none;
+    }
+    #tracker-toolbar button:hover {
+        background: transparent;
+    }
+    .toggle {
+        border-bottom: 3px solid #ff0000 !important;
+        border-radius: 0 !important;
+    }
+    .b-txt{
+        margin-left: 7px;
+        margin-right: 0;
+        padding: 0;
+        margin-bottom: 5px;
+    }
+}
+
+@media screen and (min-width: 961px) {
+    #tracker-toolbar button {
+        background: linear-gradient(white, #ececec);
+        border: 1px solid #b9b9b9;
+        padding-top: 7px;
+        padding-bottom: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    #tracker-toolbar button:hover {
+        background: linear-gradient(#ffffff, #d4d4d4);
+    }
+    .toggle {
+        background: linear-gradient(#e2fcff, #31e8ff) !important;
+    }
 }

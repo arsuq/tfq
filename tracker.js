@@ -362,17 +362,25 @@ var tracker = (function () {
         } catch (ex) { }
     }
 
+    function toggle_buttons_on_header_pin(flag ) {
+        const E = document.querySelectorAll('.hide-on-header-pin')
+        if (E && E.length > 0)
+            for (const e of E) e.classList.toggle('hidden', flag)
+    }
+
     function sticktoolbar() {
         let fx = document.getElementById('fixed-header')
-        let top = document.getElementById('fixed-header').getBoundingClientRect().height
-        let title = document.getElementById('tracker-title').getBoundingClientRect().height
         if (fx) {
             if (fx.classList.contains('stick')) {
                 fx.classList.remove('stick')
                 if (host) host.style.marginTop = '1em'
+                toggle_buttons_on_header_pin(false)
             } else {
                 fx.classList.add('stick')
                 let h = document.getElementById(HOST_ELM_ID)
+                toggle_buttons_on_header_pin(true)
+                let top = document.getElementById('fixed-header').getBoundingClientRect().height
+                let title = document.getElementById('tracker-title').getBoundingClientRect().height
                 if (h) h.style.marginTop = top - title + 'px'
             }
         }
