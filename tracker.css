@@ -5,6 +5,10 @@ body {
     margin: 0;
 }
 
+*{
+    user-select: none;
+}
+
 #tracker-title {
     text-align: center;
     color: #636363;
@@ -83,16 +87,16 @@ body {
 .tr-item-header-status-checked {}
 
 .tr-item-header-title {
-    margin: 0.2em;
+    margin: 1px;
     vertical-align: top;
     display: inline-block;
-    margin-left: 0.5em;
+    margin-left: 0.6em;
     outline: none;
     background-color: white;
-    /* background: url('root.png'); */
+    /* background: url(root.png); */
     border: 1px solid #5858586b;
     border-radius: 0.35em;
-    padding: 0.4em;
+    padding: 0.33em;
     padding-left: 1em;
     padding-right: 1em;
 }
@@ -193,7 +197,7 @@ button[disabled] {
     border: 1px solid #e4e4e4 !important;
 }
 
-@media screen and (max-width: 960px) {
+@media screen and (max-width: 720px) {
     #tracker-toolbar button {
         background: transparent;
         border: none;
@@ -209,11 +213,12 @@ button[disabled] {
         margin-left: 7px;
         margin-right: 0;
         padding: 0;
-        margin-bottom: 5px;
+        margin-top: 10px !important;
+        margin-bottom: 2px;
     }
 }
 
-@media screen and (min-width: 961px) {
+@media screen and (min-width: 721px) {
     #tracker-toolbar button {
         background: linear-gradient(white, #ececec);
         border: 1px solid #b9b9b9;

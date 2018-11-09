@@ -6,11 +6,18 @@ var tracker = (function () {
     let ntfdiv = null
     let host = null
     let recursive_marks = 0
+    let readonly_mode = 0
     let isMobile = false
+    let bcollapse = null
+    let bexpand = null
+    let hiddendiv = null
     let drivefileMap = new Map() // list key, drive file key
 
     document.addEventListener('DOMContentLoaded', function () {
         ntfdiv = document.getElementById('ntf')
+        bcollapse = document.getElementById('b-collapse')
+        bexpand = document.getElementById('b-expand')
+        hiddendiv = document.getElementById('hidden-elements')
         host = document.getElementById(HOST_ELM_ID)
         gcal = goog()
         load_ls_lists()
@@ -117,7 +124,6 @@ var tracker = (function () {
         let status = document.createElement('span')
 
         status.innerText = mark
-
         header.appendChild(status)
         header.appendChild(stitle)
         item.appendChild(header)
@@ -129,15 +135,23 @@ var tracker = (function () {
         item.onclick = function (e) {
             e.preventDefault()
             e.stopPropagation()
+            hiddendiv.appendChild(bcollapse)
+            hiddendiv.appendChild(bexpand)
             let sel = document.querySelectorAll('.tr-item-selected')
             for (let s of sel)
                 if (s != item) s.classList.remove('tr-item-selected')
-            item.classList.toggle('tr-item-selected')
+            const issel = item.classList.toggle('tr-item-selected')
+            const subs = item.querySelectorAll('.tr-item').length
+            if (issel === true && subs > 0) {
+                header.classList.contains('tr-item-header-collapsed') ?
+                    header.appendChild(bexpand) :
+                    header.appendChild(bcollapse)
+            }
         }
 
         if (style) stitle.setAttribute('style', style)
 
-        stitle.setAttribute('contenteditable', 'true')
+        if (readonly_mode < 1) stitle.setAttribute('contenteditable', 'true')
         stitle.innerHTML = title
         item.classList.add('tr-item')
         header.classList.add('tr-item-header')
@@ -348,6 +362,7 @@ var tracker = (function () {
 
     function swipe() {
         try {
+            if (!confirm("Swipe all closed or dropped items?")) return
             const DROPPED = '-'
             const CLOSED = 'x'
             let statuses = host.querySelectorAll('.tr-item-header-status')
@@ -362,7 +377,7 @@ var tracker = (function () {
         } catch (ex) { }
     }
 
-    function toggle_buttons_on_header_pin(flag ) {
+    function toggle_buttons_on_header_pin(flag) {
         const E = document.querySelectorAll('.hide-on-header-pin')
         if (E && E.length > 0)
             for (const e of E) e.classList.toggle('hidden', flag)
@@ -510,6 +525,16 @@ var tracker = (function () {
         }
     }
 
+    function readonly(btn) {
+        readonly_mode = (readonly_mode + 1) % 2
+        btn.classList.toggle('toggle', readonly_mode > 0)
+        const v = readonly_mode > 0 ? 'false' : 'true'
+        const E = document.querySelectorAll(`.tr-item-header-title`)
+        if (E && E.length > 0)
+            for (const e of E)
+                e.setAttribute('contenteditable', v)
+    }
+
     return {
         create_item,
         save_to_ls,
@@ -529,6 +554,7 @@ var tracker = (function () {
         swipe,
         ntf,
         sticktoolbar,
+        readonly,
         mergedrive,
         override_google_drive
     }

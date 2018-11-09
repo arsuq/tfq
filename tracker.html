@@ -15,6 +15,10 @@
 
 
 <body>
+    <div id="hidden-elements" class="hidden">
+        <span id="b-collapse"  onclick="tracker.toggle(1)" title="Collapse"><img src="icons/up.png" style="width: 16px; padding: 6px;"></span>
+        <span id="b-expand" onclick="tracker.toggle(0)" title="Expand"><img src="icons/down.png" style="width: 16px; padding: 6px;"></span>
+    </div>
     <div id="ntf"></div>
     <div id="tracker-title"><img style="cursor: pointer;" title="go to time frames" onclick="(function(){document.location.href = 'index.html'})()"
             src="tracker.png" width="180"></div>
@@ -31,28 +35,28 @@
                 <button onclick="tracker.parse()" class="hide-on-header-pin" title="Parse selected title"><img src="icons/parse.png"></button>
                 <button onclick="tracker.recursive(this)" class="hide-on-header-pin" title="Updates subitems on mark"><img
                         src="icons/recursive.png"></button>
+                <button onclick="tracker.readonly(this)"  title="Read-only mode"><img src="icons/nowrite.png"></button>
                 <button onclick="tracker.save_to_ls()" title="Save to local storage"><img src="icons/save.png"></button>
                 <button onclick="tracker.clear()" class="hide-on-header-pin" title="Clear"><img src="icons/delete.png"></button>
                 <button onclick="tracker.download()" class="hide-on-header-pin" title="Export"><img src="icons/download.png"></button>
-                <button id="authorize-btn" class="hide-on-header-pin" title="Grant permissions to read/write to your google drive"><img src="icons/access.png"></button>
+                <button id="authorize-btn" class="hide-on-header-pin" title="Grant permissions to read/write to your google drive"><img
+                        src="icons/access.png"></button>
                 <button id="revoke-btn" class="hidden" title="Revoke the granted permissions"><img src="icons/noaccess.png"></button>
                 <button id="merge-btn" class="hidden" title="Merge with the google drive data"><img src="icons/sync.png"></button>
                 <button id="override-btn" class="hidden" title="Upload to google drive"><img src="icons/uploadcloud.png"></button>
                 <button onclick="tracker.up()" title="Move up"><img src="icons/up2.png"></button>
                 <button onclick="tracker.down()" title="Move down"><img src="icons/down2.png"></button>
                 <button onclick="tracker.sticktoolbar()" title="Stick toolbar"><img src="icons/stick.png"></button>
-                <button onclick="tracker.toggle(1)" title="Collapse"><img src="icons/up.png"></button>
-                <button onclick="tracker.toggle(0)" title="Expand"><img src="icons/down.png"></button>
                 <br>
                 <button class="b-txt" onclick="tracker.set_symbol()">symbol</button>
                 <button class="b-txt" onclick="tracker.set_symbol('@','background-color: #b5fab5;')">current</button>
                 <button class="b-txt" onclick="tracker.set_symbol('%','background-color: #ffd462;')">in prog</button>
-                <button class="hide-on-header-pin b-txt" onclick="tracker.set_symbol('h','background-color: #b794f2;')">halt</button>
+                <button class="b-txt" onclick="tracker.set_symbol('h','background-color: #b794f2;')">halt</button>
                 <button class="hide-on-header-pin b-txt" onclick="tracker.set_symbol('b','background-color: #ff7e7e;')">block</button>
-                <button class="b-txt" onclick="tracker.set_symbol('-','background-color: #545454; color: white;')">drop</button>
+                <button class="hide-on-header-pin b-txt" onclick="tracker.set_symbol('-','background-color: #545454; color: white;')">drop</button>
                 <button class="b-txt" onclick="tracker.set_symbol('x','background-color: #3a5b95; color: #dde9ff;')">close</button>
                 <button class="b-txt" onclick="tracker.set_symbol('+')">reset</button>
-                <button class="b-txt" onclick="tracker.swipe()" title="removes closed or dropped items">swipe</button>
+                <button class="hide-on-header-pin b-txt" onclick="tracker.swipe()" title="removes closed or dropped items">swipe</button>
             </div>
             <div id="ls-lists-wrp"></div>
         </div>
