@@ -12,6 +12,7 @@ var tracker = (function () {
     let bexpand = null
     let hiddendiv = null
     let drivefileMap = new Map() // list key, drive file key
+    let dragged_in = 0 // not dragged over other items -> move over the root
 
     document.addEventListener('DOMContentLoaded', function () {
         ntfdiv = document.getElementById('ntf')
@@ -23,8 +24,34 @@ var tracker = (function () {
         load_ls_lists()
         let items = document.querySelector(`[key='tracked-items']`)
         if (items) items.click()
-        let fx = document.getElementById('fixed-header')
         isMobile = window.matchMedia("only screen and (max-width: 760px)")
+        host.ondragover = function (e) {
+            if (dragged_in < 1 && readonly_mode < 1) {
+                e.preventDefault();
+                host.classList.add('dragged-over')
+            }
+        }
+        host.ondragleave = function () {
+            if (dragged_in < 1 && readonly_mode < 1)
+                host.classList.remove('dragged-over')
+        }
+        host.ondrop = function (e) {
+            if (dragged_in < 1 && readonly_mode < 1) {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('dragged-id')
+                if (id) {
+                    const dragged = document.getElementById(id)
+                    if (dragged) host.appendChild(dragged)
+                }
+                host.classList.remove('dragged-over')
+            }
+        }
+    })
+
+    document.addEventListener('keydown', function (e) {
+        if (readonly_mode > 0) {
+            if (e.key == 'Delete') remove_selected()
+        }
     })
 
     function load_ls_lists() {
@@ -153,11 +180,43 @@ var tracker = (function () {
 
         if (readonly_mode < 1) stitle.setAttribute('contenteditable', 'true')
         stitle.innerHTML = title
+        item.setAttribute('draggable', 'true')
+        item.ondragstart = function (e) {
+            if (readonly_mode < 1) e.dataTransfer.setData("dragged-id", e.target.id);
+        }
+        header.ondragover = function (e) {
+            if (readonly_mode < 1) {
+                dragged_in = 1
+                e.preventDefault();
+                header.classList.add('dragged-over')
+            }
+        }
+        header.ondragleave = function () {
+            if (readonly_mode < 1) {
+                dragged_in = 0
+                header.classList.remove('dragged-over')
+            }
+        }
+        header.ondrop = function (e) {
+            if (readonly_mode < 1) {
+                dragged_in = 1
+                e.preventDefault();
+                const id = e.dataTransfer.getData('dragged-id')
+                if (id) {
+                    const dragged = document.getElementById(id)
+                    if (dragged) content.appendChild(dragged)
+                }
+                header.classList.remove('dragged-over')
+            }
+        }
+
         item.classList.add('tr-item')
         header.classList.add('tr-item-header')
         stitle.classList.add('tr-item-header-title')
         status.classList.add('tr-item-header-status')
         content.classList.add('tr-item-content')
+
+
 
         if (iscollapsed === true) {
             header.classList.add('tr-item-header-collapsed')
