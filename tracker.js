@@ -199,14 +199,17 @@ var tracker = (function () {
         }
         header.ondrop = function (e) {
             if (readonly_mode < 1) {
-                dragged_in = 1
-                e.preventDefault();
-                const id = e.dataTransfer.getData('dragged-id')
-                if (id) {
-                    const dragged = document.getElementById(id)
-                    if (dragged) content.appendChild(dragged)
+                try {
+                    dragged_in = 1
+                    e.preventDefault();
+                    const id = e.dataTransfer.getData('dragged-id')
+                    if (id) {
+                        const dragged = document.getElementById(id)
+                        if (dragged) content.appendChild(dragged)
+                    }
+                    header.classList.remove('dragged-over')
                 }
-                header.classList.remove('dragged-over')
+                catch (ex) { }
             }
         }
 
@@ -376,7 +379,7 @@ var tracker = (function () {
         }
     }
 
-    function set_symbol(symbol, style = null) {
+    function set_symbol(symbol, style = null, del = 0) {
         let sh = host.querySelector('.tr-item-selected')
         if (sh) {
             let s = sh.querySelector('.tr-item-header-status')
@@ -397,7 +400,7 @@ var tracker = (function () {
             let t = sh.querySelector('.tr-item-header-title')
             if (t) {
                 if (style) t.setAttribute('style', style)
-                else t.removeAttribute('style')
+                else if (del > 0) t.removeAttribute('style')
             }
         }
     }
