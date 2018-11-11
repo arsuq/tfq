@@ -5,6 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Time frames</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
@@ -14,7 +16,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css">
     <link rel="icon" href="timer.png">
     <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
     <style>
         .vis-item {
             border: 1px solid #3f3f3f6e;
@@ -44,7 +46,8 @@
 <body class="hw-root">
     <div id="wrp">
         <div id="ntf"></div>
-        <div id="title"><img style="cursor: pointer;" title="go to tracker" onclick="(function(){document.location.href = 'tracker.html'})()" src="logo.png" width="250"></div>
+        <div id="title"><img style="cursor: pointer;" title="go to tracker" onclick="(function(){document.location.href = 'tracker.html'})()"
+                src="logo.png" width="250"></div>
         <div id="toolbar">
             <div>
                 <button onclick="tq.add()" title="add range"><img src="icons/new.png"></button>
@@ -64,40 +67,57 @@
             </div>
             <div id="toolbar-more" class="hidden">
                 <button onclick="export_data()" title="export data">export</button>
-                <button onclick="export_range()" title="export only frames between the start-end input dates">export range</button>
+                <button onclick="export_range()" title="export only frames between the start-end input dates">export
+                    range</button>
                 <button onclick="import_data()" title="import data">import</button>
                 <button id="authorize-button" class="btn" title="Give read/write permissions for google drive and read for the calendar events">authorize</button>
                 <button id="merge-with-google" class="btn hidden" title="Merge with google drive">merge</button>
                 <button id="override-google" class="btn hidden" title="Override the tfq file in your google drive">push</button>
-                <button id="from-google-calendar" class="btn hidden" title="Get events from your google calendar">sync google calendar</button>
-                <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke permission</button>
+                <button id="from-google-calendar" class="btn hidden" title="Get events from your google calendar">sync
+                    google calendar</button>
+                <button id="signout-button" class="btn hidden" title="Revoke the read-calendar permission">revoke
+                    permission</button>
             </div>
         </div>
         <div id="info" class="hidden">
             <div id="infoframe">
                 <h3>Add</h3>
-                <p>To add a frame press '+' or click the add button <img src="icons/new.png">. Type a caption and confirm. If there is a selected frame on the timeline the new one will be scheduled to start after the selected frame's end, otherwise the blue
+                <p>To add a frame press '+' or click the add button <img src="icons/new.png">. Type a caption and
+                    confirm. If there is a selected frame on the timeline the new one will be scheduled to start after
+                    the selected frame's end, otherwise the blue
                     vertical line will mark the start. </p>
                 <h3>Move around and resize</h3>
-                <p>All active frames could be dragged and stretched when they are on the right side of the red line. Once a fame is moved in the past, only the edit and delete operations are possible. </p>
+                <p>All active frames could be dragged and stretched when they are on the right side of the red line.
+                    Once a fame is moved in the past, only the edit and delete operations are possible. </p>
                 <h3>Cut</h3>
-                <p>You can cut <img src="icons/cut.png"> active frames only, i.e. when the red line (now) splits the frame. The cut will make an inactive (past) frame and will erase the remainder.</p>
+                <p>You can cut <img src="icons/cut.png"> active frames only, i.e. when the red line (now) splits the
+                    frame. The cut will make an inactive (past) frame and will erase the remainder.</p>
                 <h3>Edit</h3>
-                <p>Select a time-frame (inactive included) and click the edit button <img src="icons/edit.png">, click save if you want to keep it. </p>
+                <p>Select a time-frame (inactive included) and click the edit button <img src="icons/edit.png">, click
+                    save if you want to keep it. </p>
                 <h3>Storage</h3>
-                <p>Everything is kept in the local storage of the current browser, which means that there are storage limits (~5mb). For simplicity the save/load operations move the whole data between the memory and the LS, therefore why you shouldn't keep
+                <p>Everything is kept in the local storage of the current browser, which means that there are storage
+                    limits (~5mb). For simplicity the save/load operations move the whole data between the memory and
+                    the LS, therefore why you shouldn't keep
                     more that 1-2 megs of data.&nbsp;</p>
-                <p>When saving <img src="icons/save.png"> all time-frames are bundled as a single item and stored in the local storage under 'all-time-frames' key. To clear everything click the delete button <img src="icons/delete.png"></p>
+                <p>When saving <img src="icons/save.png"> all time-frames are bundled as a single item and stored in
+                    the local storage under 'all-time-frames' key. To clear everything click the delete button <img src="icons/delete.png"></p>
                 <p>If you remove individual time-frames with the floating <i>x</i> button, save to update the storage.</p>
                 <h3>Google drive</h3>
-                <p>If you grant the RW permission, you may sync the localstorage data with your google drive. In order to do that first merge from the cloud then make changes, save locally and upload. There will be a file named 'tfq-frames-data.json' in
-                    the root folder. The Tracker uses the same workflow, however there will be a separate file on your google drive for each list because the merging and uploading are per list in the Tracker.</p>
+                <p>If you grant the RW permission, you may sync the localstorage data with your google drive. In order
+                    to do that first merge from the cloud then make changes, save locally and upload. There will be a
+                    file named 'tfq-frames-data.json' in
+                    the root folder. The Tracker uses the same workflow, however there will be a separate file on your
+                    google drive for each list because the merging and uploading are per list in the Tracker.</p>
                 <h3>Google calendar</h3>
-                <p>You may get future events from your calendar and plot them on the timeline, but you cannot edit or save them. </p>
+                <p>You may get future events from your calendar and plot them on the timeline, but you cannot edit or
+                    save them. </p>
                 <h3>Notification</h3>
-                <p>On dektop browsers both the start and the end of a frame are signaled with a browser notification, if you grant the permission. </p>
+                <p>On dektop browsers both the start and the end of a frame are signaled with a browser notification,
+                    if you grant the permission. </p>
                 <p>On mobile devices the default notification is triggered.</p>
-                <p><b>Note:</b> The mobile browsers may not keep the background ticker alive for long after you move away from the page.</p>
+                <p><b>Note:</b> The mobile browsers may not keep the background ticker alive for long after you move
+                    away from the page.</p>
                 <h3>Credits</h3>
                 <p><a href="http://visjs.org/" target="_blank">Vis.js</a></p>
 
@@ -136,16 +156,20 @@
                 <button class="btn" onclick="tq.hide_time()" title="Hides the selected [start-end] hours">hide hours</button>
                 <button class="btn" onclick="tq.hide_07()" title="Hides the 0:00 - 7:00AM hours">24-07</button>
                 <button class="btn" onclick="tq.hide_19_8()" title="Hides the 19:00 - 08:00 hours">19-08</button>
-                <button class="btn" onclick="tq.goto_spec_end()" title="Moves the blue line to the specified end date and time">mark end</button>
+                <button class="btn" onclick="tq.goto_spec_end()" title="Moves the blue line to the specified end date and time">mark
+                    end</button>
             </div>
         </div>
         <div id="visualization"></div>
     </div>
     <div id="sound"></div>
     <div class="hidden">
-        <audio id="aud_start"><source src="audio/1.mp3" type="audio/mpeg"> </audio>
-        <audio id="aud_end"><source src="audio/2.mp3" type="audio/mpeg"> </audio>
-        <audio id="aud_point"><source src="audio/3.mp3" type="audio/mpeg"> </audio>
+        <audio id="aud_start">
+            <source src="audio/1.mp3" type="audio/mpeg"> </audio>
+        <audio id="aud_end">
+            <source src="audio/2.mp3" type="audio/mpeg"> </audio>
+        <audio id="aud_point">
+            <source src="audio/3.mp3" type="audio/mpeg"> </audio>
     </div>
 </body>
 

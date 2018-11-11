@@ -43,8 +43,8 @@ var tracker = (function () {
                     const dragged = document.getElementById(id)
                     if (dragged) host.appendChild(dragged)
                 }
-                host.classList.remove('dragged-over')
             }
+            host.classList.remove('dragged-over')
         }
     })
 
@@ -164,6 +164,7 @@ var tracker = (function () {
             e.stopPropagation()
             hiddendiv.appendChild(bcollapse)
             hiddendiv.appendChild(bexpand)
+            header.classList.remove('dragged-over')
             let sel = document.querySelectorAll('.tr-item-selected')
             for (let s of sel)
                 if (s != item) s.classList.remove('tr-item-selected')
@@ -207,10 +208,11 @@ var tracker = (function () {
                         const dragged = document.getElementById(id)
                         if (dragged) content.appendChild(dragged)
                     }
-                    header.classList.remove('dragged-over')
+                   
                 }
                 catch (ex) { }
             }
+            header.classList.remove('dragged-over')
         }
 
         item.classList.add('tr-item')
@@ -393,14 +395,21 @@ var tracker = (function () {
                 let pp = s.parentElement.parentElement
                 if (recursive_marks > 0) {
                     if (!pp.classList.contains('tr-item')) pp == s.parentElement
-                    let alldown = pp.querySelectorAll('.tr-item-header-status')
-                    for (c of alldown) c.innerText = symbol
+                    const alldown = pp.querySelectorAll('.tr-item-header-status')
+                    for (const c of alldown) c.innerText = symbol
                 }
             }
             let t = sh.querySelector('.tr-item-header-title')
             if (t) {
                 if (style) t.setAttribute('style', style)
                 else if (del > 0) t.removeAttribute('style')
+            }
+            if (recursive_marks > 0) {
+                let T = sh.querySelectorAll('.tr-item-header-title')
+                if (T && T.length > 0)
+                    for (const ct of T)
+                        if (style) ct.setAttribute('style', style)
+                        else if (del > 0) ct.removeAttribute('style')
             }
         }
     }
@@ -450,10 +459,12 @@ var tracker = (function () {
         if (fx) {
             if (fx.classList.contains('stick')) {
                 fx.classList.remove('stick')
+                ntfdiv.classList.remove('stick')
                 if (host) host.style.marginTop = '1em'
                 toggle_buttons_on_header_pin(false)
             } else {
                 fx.classList.add('stick')
+                ntfdiv.classList.add('stick')
                 let h = document.getElementById(HOST_ELM_ID)
                 toggle_buttons_on_header_pin(true)
                 let top = document.getElementById('fixed-header').getBoundingClientRect().height

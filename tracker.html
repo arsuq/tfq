@@ -15,11 +15,11 @@
 
 
 <body>
+    <div id="ntf"></div>
     <div id="hidden-elements" class="hidden">
         <span id="b-collapse" onclick="tracker.toggle(1)" title="Collapse"><img src="icons/up.png" style="width: 16px; padding: 6px;"></span>
         <span id="b-expand" onclick="tracker.toggle(0)" title="Expand"><img src="icons/down.png" style="width: 16px; padding: 6px;"></span>
     </div>
-    <div id="ntf"></div>
     <div id="tracker-title"><img style="cursor: pointer;" title="go to time frames" onclick="(function(){document.location.href = 'index.html'})()"
             src="tracker.png" width="180"></div>
 
@@ -56,8 +56,8 @@
                         <span class="state-color b-txt" style="background-color: #b5fab5;" title="Mark as current item"
                             onclick="tracker.set_symbol('@','background-color: #b5fab5;')"></span>
                         <span class="state-color b-txt" style="background-color: #ffd462;" title="In progress" onclick="tracker.set_symbol('%','background-color: #ffd462;')"></span>
-                        <span class="state-color b-txt" style="background-color: #89b5ff;" title="Approved" onclick="tracker.set_symbol('ok','background-color: #89b5ff;')"></span>
-                        <span class="state-color b-txt" style="background-color: #b794f2;" title="Halt" onclick="tracker.set_symbol('halt','background-color: #b794f2;')"></span>
+                        <span class="state-color b-txt" style="background-color: #89b5ff;" title="Approved" onclick="tracker.set_symbol('>','background-color: #89b5ff;')"></span>
+                        <span class="state-color b-txt" style="background-color: #b794f2;" title="h" onclick="tracker.set_symbol('*','background-color: #b794f2;')"></span>
                         <span class="state-color hide-on-header-pin b-txt" style="background-color: #ff7e7e;" title="!"
                             onclick="tracker.set_symbol('!','background-color: #ff7e7e;')"></span>
                         <span class="state-color b-txt" style="background-color: #3a5b95; color: #dde9ff;" title="Close"
