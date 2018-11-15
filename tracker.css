@@ -27,7 +27,7 @@ body {
     width: fit-content;
     margin: auto;
     margin-top: 0.5em;
-    padding: 5px;
+    padding: 4px;
 }
 
 #tracker-wrp {}
@@ -83,6 +83,8 @@ body {
     font-weight: bold;
     min-width: 2em;
     padding-top: 0.25em;
+    margin-left: 0.4em;
+    margin-right: 0.4em;
 }
 
 .tr-item-header-status-checked {}
@@ -91,7 +93,6 @@ body {
     margin: 1px;
     vertical-align: top;
     display: inline-block;
-    margin-left: 0.6em;
     outline: none;
     background-color: white;
     /* background: url(root.png); */
