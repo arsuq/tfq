@@ -82,9 +82,9 @@ body {
     vertical-align: top;
     font-weight: bold;
     min-width: 2em;
-    padding-top: 0.25em;
     margin-left: 0.4em;
     margin-right: 0.4em;
+    margin-bottom: 2px;
 }
 
 .tr-item-header-status-checked {}
