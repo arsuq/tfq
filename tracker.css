@@ -27,6 +27,7 @@ body {
     width: fit-content;
     margin: auto;
     margin-top: 0.5em;
+    padding: 5px;
 }
 
 #tracker-wrp {}
