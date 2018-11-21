@@ -255,3 +255,19 @@ button[disabled] {
         background: linear-gradient(#e2fcff, #31e8ff) !important;
     }
 }
+
+
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+}
+ 
+::-webkit-scrollbar-thumb {
+    background: rgb(129, 129, 129); 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(78, 78, 78); 
+}
