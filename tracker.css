@@ -262,10 +262,11 @@ button[disabled] {
 }
 
 ::-webkit-scrollbar-track {
+    background: transparent;
 }
  
 ::-webkit-scrollbar-thumb {
-    background: rgb(129, 129, 129); 
+    background: rgb(128, 128, 128); 
 }
 
 ::-webkit-scrollbar-thumb:hover {
