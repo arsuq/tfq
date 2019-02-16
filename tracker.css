@@ -5,6 +5,10 @@ body {
     margin: 0;
 }
 
+.disable-scroll-refresh{
+    overscroll-behavior-y: contain;
+}
+
 *{
     user-select: none;
 }

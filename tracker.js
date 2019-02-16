@@ -208,7 +208,7 @@ var tracker = (function () {
                         const dragged = document.getElementById(id)
                         if (dragged) content.appendChild(dragged)
                     }
-                   
+
                 }
                 catch (ex) { }
             }
@@ -452,6 +452,8 @@ var tracker = (function () {
         const E = document.querySelectorAll('.hide-on-header-pin')
         if (E && E.length > 0)
             for (const e of E) e.classList.toggle('hidden', flag)
+
+        document.body.classList.toggle('disable-scroll-refresh', flag)
     }
 
     function sticktoolbar() {
