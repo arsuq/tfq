@@ -376,8 +376,10 @@ function run() {
                 } else callback(null)
             }
         },
-        onMove: function(item, callback) {
+        onMove: function (item, callback) {
             callback(item)
+            let tf = document.getElementById('tf-' + item.id)
+            if (tf) items.update({ id: item.id, content: tf.parentElement.outerHTML })
         }
     };
 
