@@ -337,7 +337,7 @@ function run() {
         end: new Date(now).setDate(now.getHours() + 2),
         zoomMin: 1000 * 20,
         zoomMax: 1000 * 60 * 60 * 24 * 31 * 2, // 2 months in milliseconds
-        height: '350px',
+        height: '100%',
         margin: { axis: 30, item: { vertical: 4, horizontal: -0.5 } },
         multiselect: true,
         editable: {
